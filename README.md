@@ -41,12 +41,12 @@ been through one full peer-review pass by a second Claude session against a 20-s
 protocol; that pass's two P0 findings (untuned ridge alpha, an undocumented materiality threshold
 behind the "9 of 97 revisions" figure) have been addressed and all dependent results
 (`results/*.csv`, `results/*.json`, and the paper's Tables 1–2 and in-text numbers) regenerated
-from the corrected pipeline. Of the P1/P2 items from that review round, two are done: a
-multiple-comparisons caveat (Limitations) and a lag-choice justification with a dev-period
-sensitivity check (`tune_lags.py`, `results/lag_selection.json`) that keeps the frozen lag set.
-Still open: pinning the exact Chronos model revision (code is wired up in `chronos_expert.py` via
-`MODEL_REVISION`, but this sandbox can't reach `huggingface.co` to fetch the commit hash — run the
-one-liner in that file's TODO from a machine that can, e.g. the Mac).
+from the corrected pipeline. All three P1/P2 items from that review round are done: a
+multiple-comparisons caveat (Limitations), a lag-choice justification with a dev-period
+sensitivity check (`tune_lags.py`, `results/lag_selection.json`) that keeps the frozen lag set, and
+the exact Chronos model revision pinned in `chronos_expert.py`
+(`MODEL_REVISION = "772f3d25d38aec6d914c8949dab4462e2d46f5d8"`, obtained from a machine that could
+reach `huggingface.co` — this sandbox couldn't) and cited in the paper's E3 paragraph.
 
 `paper/main.tex` has now been compiled for real (pdflatex + bibtex, 3 passes, TeX Live 2023) against
 the actual Springer `llncs` class v2.24 and `splncs04.bst` — not just structural self-checks. It
@@ -56,4 +56,4 @@ compiles clean: no undefined references, no missing-publisher bibtex warnings, n
 `https://github.com/prosysscience/llncs`. One side effect worth noting: compiled length is now
 **10pp**, above the 6–8pp this README originally described as the target — worth checking against
 MIDI 2026's actual page limit before submission. Remaining before submission: confirm the MIDI 2026
-deadline (2026-10-08 as currently assumed) and the Chronos revision pin above.
+deadline (2026-10-08 as currently assumed) and that page-count check.

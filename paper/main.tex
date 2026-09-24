@@ -204,9 +204,11 @@ training-set size, and hence the bias-variance trade-off the penalty corrects fo
 construction.
 
 \textbf{E3 -- Chronos-Bolt (zero-shot).} At each issue date, the pretrained
-Chronos-Bolt-small pipeline~\cite{ansari2024chronos} is given the same real-time-eligible history
-as E1/E2, in levels, and asked for a one-step-ahead forecast; the median of the predicted quantile
-distribution is taken as the point forecast. No parameters are fit on our data.
+Chronos-Bolt-small pipeline~\cite{ansari2024chronos} (Hugging Face Hub revision
+\texttt{772f3d2}, pinned so a later push to the model repository cannot silently change these
+results) is given the same real-time-eligible history as E1/E2, in levels, and asked for a
+one-step-ahead forecast; the median of the predicted quantile distribution is taken as the point
+forecast. No parameters are fit on our data.
 
 \textbf{Combination.} The three experts, plus a seasonal-naive reference (repeat month $t-12$),
 are combined with the recursive fixed-share rule~\cite{herbster1998tracking}:

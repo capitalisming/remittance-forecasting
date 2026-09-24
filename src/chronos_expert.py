@@ -11,12 +11,10 @@ import realtime
 
 _PIPE = None
 MODEL_NAME = "amazon/chronos-bolt-small"
-# TODO(P1, blocked): pin to the exact HF Hub commit this run used, not just the package version
-# (chronos-forecasting==2.3.2 in requirements.txt), so a future "amazon/chronos-bolt-small" push
-# can't silently change results. Get the hash with, from a machine that can reach huggingface.co:
-#   python -c "from huggingface_hub import HfApi; print(HfApi().model_info('amazon/chronos-bolt-small').sha)"
-# then set MODEL_REVISION below and pass revision=MODEL_REVISION to from_pretrained.
-MODEL_REVISION = None
+# Pinned to the exact HF Hub commit this study's results were produced with (obtained 2026-09-24
+# via HfApi().model_info("amazon/chronos-bolt-small").sha), so a future push to the model repo
+# can't silently change results out from under the paper's numbers.
+MODEL_REVISION = "772f3d25d38aec6d914c8949dab4462e2d46f5d8"
 
 
 def get_pipeline():
