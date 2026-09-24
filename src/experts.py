@@ -12,17 +12,21 @@ from sklearn.linear_model import Ridge
 import panel
 import realtime
 
-RIDGE_ALPHA = 1.0  # placeholder; tuned in tune_ridge.py against the development period
+# Tuned by tune_ridge.py: grid search over alpha in {0.01,...,100}, dev-period MAE only
+# (results/ridge_alpha_tuning.json). E1 and E2 are tuned separately since expanding vs. rolling
+# training-set size changes the bias-variance trade-off the penalty has to correct for.
+EXPANDING_RIDGE_ALPHA = 0.1
+ROLLING_RIDGE_ALPHA = 1.0
 
 
-def expanding_ridge(X_train, y_train, x_query, alpha=RIDGE_ALPHA, **_ignored):
+def expanding_ridge(X_train, y_train, x_query, alpha=EXPANDING_RIDGE_ALPHA, **_ignored):
     if len(X_train) < 13:
         return np.exp(y_train.iloc[-1]) if len(y_train) else np.nan
     model = Ridge(alpha=alpha).fit(X_train, y_train)
     return float(np.exp(model.predict(x_query)[0]))
 
 
-def rolling_ridge(X_train, y_train, x_query, window, alpha=RIDGE_ALPHA, **_ignored):
+def rolling_ridge(X_train, y_train, x_query, window, alpha=ROLLING_RIDGE_ALPHA, **_ignored):
     Xw, yw = X_train.iloc[-window:], y_train.iloc[-window:]
     return expanding_ridge(Xw, yw, x_query, alpha=alpha)
 

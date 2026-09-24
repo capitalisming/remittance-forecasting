@@ -139,9 +139,12 @@ month $m$ is not published until well into month $m+1$, and is reliably availabl
 We therefore take month $m$ to be \emph{known} at issue date $v$ once it appears in the archived
 vintage most recently published on or before $v$, or -- for the small number of gaps our archive
 crawl missed -- in the earliest archived vintage that reports it under the same accounting
-definition as the vintage current at $v$ (defined next). Within-definition revisions are small: 9
-of 97 consecutive vintage pairs revise any shared month at all, and by less than 4\% in all but one
-case.
+definition as the vintage current at $v$ (defined next). Within-definition revisions are small: at
+a materiality threshold of \$0.02 million (below the rounding resolution of the source
+spreadsheets -- raw differences below this are float noise, not real revisions), 9 of 97
+consecutive vintage pairs revise any shared month at all, and by less than 4\% in all but one case;
+counting any nonzero floating-point difference instead gives 12, three of which are sub-threshold
+noise (\texttt{src/check\_revisions.py} reproduces both counts).
 
 Second, in a vintage dated 2024-02-14, NBKR redefined the series -- from transfers made through
 money-transfer systems to all cross-border instruments, including mobile banking and e-wallets --
@@ -170,16 +173,22 @@ vintage. All tests pass.
 \label{sec:methodology}
 
 Forecasts are issued at the end of each month $v$ for target month $t = v+1$ (horizon $h=1$).
-Experts are fit on $z_t = \log y_t$; the point forecast is $\hat y = \exp(\hat z)$, the conditional
-median of $y_t$ under a symmetric error distribution for $z_t$.
+E1 and E2 are fit on $z_t = \log y_t$; their point forecast is $\hat y = \exp(\hat z)$, the
+conditional median of $y_t$ under a symmetric error distribution for $z_t$. E3 (below) is not
+log-transformed -- it is given the series in levels, its native input scale.
 
 \textbf{E1 -- Expanding ridge.} Ridge regression, refit at every issue date on all months whose
 predictors -- lags $z_{t-1}, z_{t-2}, z_{t-3}, z_{t-12}$ and eleven monthly indicators -- are fully
-known at $v$, using the training set growing from the start of the series.
+known at $v$, using the training set growing from the start of the series. Ridge penalty
+$\alpha \in \{0.01, 0.03, 0.1, 0.3, 1, 3, 10, 30, 100\}$ was selected by grid search on the
+development period alone; $\alpha=0.1$ was chosen (\texttt{src/tune\_ridge.py}).
 
 \textbf{E2 -- Rolling ridge.} The same specification, refit at every issue date on only the most
-recent $w$ eligible rows. The window $w \in \{24, 36, 48\}$ was selected by evaluation on the
-development period alone (through 2021-12); $w=48$ was chosen.
+recent $w$ eligible rows. The window $w \in \{24, 36, 48\}$ and, separately, ridge penalty $\alpha$
+(same grid as E1) were each selected by evaluation on the development period alone (through
+2021-12); $w=48$, $\alpha=1$ were chosen. E1 and E2 are tuned to different $\alpha$ because their
+training-set size, and hence the bias-variance trade-off the penalty corrects for, differs by
+construction.
 
 \textbf{E3 -- Chronos-Bolt (zero-shot).} At each issue date, the pretrained
 Chronos-Bolt-small pipeline~\cite{ansari2024chronos} is given the same real-time-eligible history
@@ -197,7 +206,7 @@ where $\ell_{k,n} = \min(|\hat y_{k,n} - y_n| / c,\ 1)$ is a clipped loss and $n
 is known under the real-time protocol of Section~\ref{sec:data}, so the weight update for a
 forecast issued at $v$ typically uses feedback from roughly three months earlier, not the
 immediately preceding month. The clip constant $c$ is fixed at the 95th percentile of pooled
-absolute errors across all four candidates on the development period ($c = 74.53$) and never
+absolute errors across all four candidates on the development period ($c = 74.66$) and never
 re-estimated. Learning rate $\eta \in \{0.5, 1, 2, 4\}$ and sharing parameter
 $\alpha \in \{0, 0.01, 0.05\}$ are selected by grid search on the development period only
 ($\eta=0.5$, $\alpha=0.05$ chosen); weights start uniform.
@@ -244,7 +253,7 @@ weighted average of the main window and the (separately reported) transition win
 Expert & Main window ($n{=}49$) & Shock 2022 ($n{=}8$) & Transition ($n{=}4$) & Full ($n{=}53$)\\
 \midrule
 Seasonal naive        & 49.0 & \textbf{35.3} & 49.3  & 49.0 \\
-Expanding ridge (E1)   & \textbf{33.3} & 53.7 & 107.3 & \textbf{38.9} \\
+Expanding ridge (E1)   & \textbf{32.7} & 53.4 & 115.6 & \textbf{38.9} \\
 Rolling ridge, $w{=}48$ (E2) & 35.8 & 52.7 & 96.2  & 40.3 \\
 Chronos zero-shot (E3) & 37.7 & 42.7 & 87.6  & 41.5 \\
 \bottomrule
@@ -261,7 +270,7 @@ when that trend reverses.
 
 The transition window makes the same mechanism starker. Naive is nearly unaffected (49.3, close to
 its usual level); the three fitted models are two to three times worse than even the 2022 shock
-(87.6--107.3 vs.\ 42.7--53.7). Because October 2023 -- January 2024 was never published under the
+(87.6--115.6 vs.\ 42.7--53.4). Because October 2023 -- January 2024 was never published under the
 old definition (Section~\ref{sec:data}), this large error cannot be cleanly separated into a
 forecasting failure and a measurement artefact -- the two are inseparable here. We report it as
 such rather than attributing it to either cause: a forecaster trained honestly in real time is not
@@ -280,9 +289,9 @@ used for shock-window CIs given the small $n$ (Section~\ref{sec:methodology}).}
 \toprule
  & Main window ($n{=}49$) & Shock ($n{=}8$) \\
 \midrule
-Fixed-share      & 36.22 & 45.52 \\
-Equal-weight     & 34.84 & 44.24 \\
-Bootstrap 95\% CI on difference & $[-0.29, +3.29]$ & $[+0.32, +2.01]$ \\
+Fixed-share      & 35.93 & 45.59 \\
+Equal-weight     & 34.62 & 44.16 \\
+Bootstrap 95\% CI on difference & $[-0.29, +2.34]$ & $[+0.29, +2.15]$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -296,15 +305,15 @@ construction (Section~\ref{sec:methodology}); we treat this as suggestive, not c
 
 The comparison is asymmetric across which expert fixed-share is compared to. Repeating the same
 bootstrap for fixed-share against naive and against Chronos on the shock window gives a
-difference of $+10.2$ (95\% CI $[+2.3, +21.2]$, excluding zero even at the coarse 3-month block --
-robust) against naive, but only $+2.8$ (95\% CI $[-6.5, +12.9]$, including zero) against Chronos.
+difference of $+10.2$ (95\% CI $[+1.9, +20.4]$, excluding zero even at the coarse 3-month block --
+robust) against naive, but only $+2.9$ (95\% CI $[-7.4, +12.7]$, including zero) against Chronos.
 Fixed-share reliably underperforms naive during the shock; it is not reliably distinguishable from
 its best individual component, Chronos.
 
-The mechanism is visible in the weight trajectory: naive's weight moves from 0.224 in February
-2022 to only 0.298 by September, recognising naive's advantage too slowly to help during the most
+The mechanism is visible in the weight trajectory: naive's weight moves from 0.220 in February
+2022 to only 0.294 by September, recognising naive's advantage too slowly to help during the most
 acute months (April--June). The same delay is sharper during the transition window: naive's weight
-\emph{falls} from 0.183 (October 2023) to 0.123 (December 2023) -- moving away from, not toward,
+\emph{falls} from 0.178 (October 2023) to 0.117 (December 2023) -- moving away from, not toward,
 the best-performing expert -- and is then exactly unchanged between December and January, when the
 combiner's own feedback source (Section~\ref{sec:data}) was itself delayed by the redefinition.
 This is a direct illustration of the paper's central mechanism: the same publication delay that
@@ -314,15 +323,15 @@ regime change makes fast adaptation most valuable.
 \subsection{Extra feedback delay (Experiment D)}
 
 Adding $k \in \{1,2,3\}$ months of artificial delay on top of the natural publication lag, with
-$\eta,\alpha$ fixed at their development-tuned values, changes main-window MAE by at most $0.15$
+$\eta,\alpha$ fixed at their development-tuned values, changes main-window MAE by at most $0.21$
 (bootstrap 95\% CIs for all three all include zero). Under the tuned, already-conservative
 $\eta=0.5$, the combiner reacts slowly enough that a small amount of additional delay adds little
 further damage on top of what the natural $\sim$3-month lag already costs.
 
 \subsection{Why the sharing parameter matters}
 
-Setting $\alpha=0$ (no floor on any expert's weight) improves the main-window MAE to 33.9 (from
-36.2) but worsens the shock-window MAE to 52.7 (from 45.5). Without a floor, naive and Chronos are
+Setting $\alpha=0$ (no floor on any expert's weight) improves the main-window MAE to 33.3 (from
+35.9) but worsens the shock-window MAE to 53.0 (from 45.6). Without a floor, naive and Chronos are
 driven to weights below 0.02 during development and cannot recover even once they begin winning;
 with $\alpha=0.05$, both retain enough weight to partially benefit from a reversal. This is the
 standard stability-plasticity trade-off, and it is precisely why development-period tuning, which
