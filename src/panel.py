@@ -18,6 +18,13 @@ import pandas as pd
 import realtime
 
 TRANSITION_ZONE = pd.period_range("2023-10", "2024-01", freq="M")  # excluded from the main window
+
+# Fixed a priori (lags 1-3 for short-run momentum, lag 12 for year-over-year seasonality),
+# not grid-searched, unlike alpha/w/eta elsewhere in the pipeline. A post hoc dev-only
+# sensitivity check across 7 alternatives (src/tune_lags.py, results/lag_selection.json) finds
+# a marginally better candidate (1,3,6,12); the gap is small enough (6.3%/2.7% dev MAE for
+# E1/E2) relative to the paper's effect sizes that we keep this set frozen rather than
+# re-tuning everything downstream against it.
 LAGS = (1, 2, 3, 12)
 
 

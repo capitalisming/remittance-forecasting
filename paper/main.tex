@@ -177,6 +177,18 @@ E1 and E2 are fit on $z_t = \log y_t$; their point forecast is $\hat y = \exp(\h
 conditional median of $y_t$ under a symmetric error distribution for $z_t$. E3 (below) is not
 log-transformed -- it is given the series in levels, its native input scale.
 
+\textbf{Lag choice.} E1 and E2 share predictors $z_{t-1}, z_{t-2}, z_{t-3}, z_{t-12}$ (three lags of
+short-run momentum plus the year-over-year seasonal lag, standard practice for monthly macro
+series) and eleven monthly indicators for any remaining seasonality. Unlike $\alpha$, $w$ and the
+fixed-share hyperparameters below, this set was fixed a priori rather than grid-searched. As a post
+hoc, development-period-only check (evaluation period untouched) we compared it against seven
+alternatives spanning $\{1\}$ through $\{1,\dots,6,12\}$ (\texttt{src/tune\_lags.py}); the best
+alternative, $\{1,3,6,12\}$, improves development MAE by 6.3\% (E1) and 2.7\% (E2) -- a gap the same
+order as noise in the shock-window bootstrap intervals reported in
+Section~\ref{sec:results}. We keep the a priori set rather than re-selecting post hoc: doing so
+would require re-tuning $\alpha$, $w$ and the fixed-share hyperparameters against the new features
+and regenerating every downstream result, for a difference this small.
+
 \textbf{E1 -- Expanding ridge.} Ridge regression, refit at every issue date on all months whose
 predictors -- lags $z_{t-1}, z_{t-2}, z_{t-3}, z_{t-12}$ and eleven monthly indicators -- are fully
 known at $v$, using the training set growing from the start of the series. Ridge penalty
@@ -349,6 +361,19 @@ more accurate under which conditions.
 latter is reported descriptively only, without a confidence interval, and readers should not treat
 an absent interval as an absent effect. Bootstrap intervals on the shock window are sensitive to
 block length by construction and are reported with that caveat rather than as a single number.
+
+\textbf{Multiple comparisons.} Section~\ref{sec:results} reports seven pairwise 95\% bootstrap
+intervals without a multiplicity correction: fixed-share vs.\ equal-weight on the main and shock
+windows (Table~\ref{tab:fs-vs-eq}), fixed-share vs.\ naive and vs.\ Chronos on the shock window, and
+the three Experiment D delay settings. Treated naively, a Bonferroni bound would put the
+family-wise error rate as high as $1-0.95^7\approx30\%$; we do not apply such a correction because
+the comparisons share data and overlapping evaluation windows and are therefore not independent,
+which would make a Bonferroni correction overly conservative in the other direction. Each interval
+should be read as a per-comparison uncertainty bound, not as part of a family-wise-controlled
+procedure. The one interval excluding zero outside the pre-registered fixed-share-vs-equal-weight
+comparison -- fixed-share vs.\ naive on the shock window -- is also the comparison the paper's own
+mechanism predicts (naive outperforming every fitted or combined model during the shock), which is
+evidence against it being a multiplicity artifact but not proof.
 
 \textbf{TSFM pretraining exposure.} We cannot rule out that Chronos's pretraining corpus contains
 series correlated with global macroeconomic conditions in 2022, which would make its zero-shot

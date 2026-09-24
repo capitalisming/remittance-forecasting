@@ -11,12 +11,19 @@ import realtime
 
 _PIPE = None
 MODEL_NAME = "amazon/chronos-bolt-small"
+# TODO(P1, blocked): pin to the exact HF Hub commit this run used, not just the package version
+# (chronos-forecasting==2.3.2 in requirements.txt), so a future "amazon/chronos-bolt-small" push
+# can't silently change results. Get the hash with, from a machine that can reach huggingface.co:
+#   python -c "from huggingface_hub import HfApi; print(HfApi().model_info('amazon/chronos-bolt-small').sha)"
+# then set MODEL_REVISION below and pass revision=MODEL_REVISION to from_pretrained.
+MODEL_REVISION = None
 
 
 def get_pipeline():
     global _PIPE
     if _PIPE is None:
-        _PIPE = BaseChronosPipeline.from_pretrained(MODEL_NAME, device_map="cpu", torch_dtype=torch.float32)
+        _PIPE = BaseChronosPipeline.from_pretrained(MODEL_NAME, revision=MODEL_REVISION,
+                                                      device_map="cpu", torch_dtype=torch.float32)
     return _PIPE
 
 

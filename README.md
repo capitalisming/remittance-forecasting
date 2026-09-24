@@ -41,8 +41,11 @@ been through one full peer-review pass by a second Claude session against a 20-s
 protocol; that pass's two P0 findings (untuned ridge alpha, an undocumented materiality threshold
 behind the "9 of 97 revisions" figure) have been addressed and all dependent results
 (`results/*.csv`, `results/*.json`, and the paper's Tables 1–2 and in-text numbers) regenerated
-from the corrected pipeline. Remaining before submission: confirm the MIDI 2026 deadline
-(2026-10-08 as currently assumed), a real LaTeX compile against the Springer template (not
-available locally — only structural self-checks have been run), and the P1/P2 items from that
-review round (multiple-comparisons note, lag choice justification, pinned Chronos package/model
-version).
+from the corrected pipeline. Of the P1/P2 items from that review round, two are done: a
+multiple-comparisons caveat (Limitations) and a lag-choice justification with a dev-period
+sensitivity check (`tune_lags.py`, `results/lag_selection.json`) that keeps the frozen lag set.
+Still open: pinning the exact Chronos model revision (code is wired up in `chronos_expert.py` via
+`MODEL_REVISION`, but this sandbox can't reach `huggingface.co` to fetch the commit hash — run the
+one-liner in that file's TODO from a machine that can, e.g. the Mac). Remaining before submission:
+confirm the MIDI 2026 deadline (2026-10-08 as currently assumed) and a real LaTeX compile against
+the Springer template (not available locally — only structural self-checks have been run).
