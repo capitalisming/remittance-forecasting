@@ -46,6 +46,14 @@ multiple-comparisons caveat (Limitations) and a lag-choice justification with a 
 sensitivity check (`tune_lags.py`, `results/lag_selection.json`) that keeps the frozen lag set.
 Still open: pinning the exact Chronos model revision (code is wired up in `chronos_expert.py` via
 `MODEL_REVISION`, but this sandbox can't reach `huggingface.co` to fetch the commit hash — run the
-one-liner in that file's TODO from a machine that can, e.g. the Mac). Remaining before submission:
-confirm the MIDI 2026 deadline (2026-10-08 as currently assumed) and a real LaTeX compile against
-the Springer template (not available locally — only structural self-checks have been run).
+one-liner in that file's TODO from a machine that can, e.g. the Mac).
+
+`paper/main.tex` has now been compiled for real (pdflatex + bibtex, 3 passes, TeX Live 2023) against
+the actual Springer `llncs` class v2.24 and `splncs04.bst` — not just structural self-checks. It
+compiles clean: no undefined references, no missing-publisher bibtex warnings, no overfull table.
+`llncs.cls` and `splncs04.bst` are Springer-licensed and are not checked into this repo
+(gitignored under `paper/`) — fetch them yourself to recompile, e.g. from
+`https://github.com/prosysscience/llncs`. One side effect worth noting: compiled length is now
+**10pp**, above the 6–8pp this README originally described as the target — worth checking against
+MIDI 2026's actual page limit before submission. Remaining before submission: confirm the MIDI 2026
+deadline (2026-10-08 as currently assumed) and the Chronos revision pin above.
