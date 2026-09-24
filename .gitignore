@@ -3,3 +3,13 @@ __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
 .DS_Store
+
+# LaTeX build artifacts (llncs.cls/splncs04.bst are Springer-licensed, fetch separately)
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.pdf
+paper/llncs.cls
+paper/splncs04.bst

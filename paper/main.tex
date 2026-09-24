@@ -14,6 +14,7 @@
 
 \author{Samir Murakaev \and Tattybubu Arap kyzy}
 \institute{Ala-Too International University, Bishkek, Kyrgyzstan}
+\titlerunning{Publication Delay and Online Adaptation in Remittance Forecasting}
 
 \maketitle
 
@@ -260,16 +261,18 @@ conditions.
 subset of the main window, not an additional disjoint slice; the full-period column equals the
 weighted average of the main window and the (separately reported) transition window.}
 \label{tab:expert-race}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{lcccc}
 \toprule
-Expert & Main window ($n{=}49$) & Shock 2022 ($n{=}8$) & Transition ($n{=}4$) & Full ($n{=}53$)\\
+Expert & Main ($n{=}49$) & Shock ($n{=}8$) & Transition ($n{=}4$) & Full ($n{=}53$)\\
 \midrule
 Seasonal naive        & 49.0 & \textbf{35.3} & 49.3  & 49.0 \\
 Expanding ridge (E1)   & \textbf{32.7} & 53.4 & 115.6 & \textbf{38.9} \\
 Rolling ridge, $w{=}48$ (E2) & 35.8 & 52.7 & 96.2  & 40.3 \\
 Chronos zero-shot (E3) & 37.7 & 42.7 & 87.6  & 41.5 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 Table~\ref{tab:expert-race} shows the central empirical pattern. Outside the shock, models fit on
