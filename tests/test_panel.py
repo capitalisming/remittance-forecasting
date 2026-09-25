@@ -66,3 +66,66 @@ def test_stale_issue_dates_still_produce_a_query_row():
         X, y, q, target_month = panel.build_row(v)
         assert len(q) == 1
         assert y.index.max() == pd.Period("2023-09", "M")
+
+
+COVARIATE_USABLE_DATES = []
+for _v in ALL_DATES:
+    try:
+        panel.build_row(_v, include_covariates=True)
+        COVARIATE_USABLE_DATES.append(_v)
+    except AssertionError:
+        pass  # not enough covariate/lag history yet
+
+
+def test_covariate_dates_are_a_subset_of_the_base_pipeline():
+    # Covariates start 2005-01 (build_covariates.py), close to but not identical with the
+    # remittance archive's own start, so a handful of extra early dates can drop out; the
+    # covariate-augmented panel should never be usable where the base panel isn't.
+    assert set(COVARIATE_USABLE_DATES) <= set(USABLE_DATES)
+    assert len(COVARIATE_USABLE_DATES) >= len(USABLE_DATES) - 15
+
+
+@pytest.mark.parametrize("v", COVARIATE_USABLE_DATES[::9], ids=lambda d: d.strftime("%Y-%m"))
+def test_covariate_shapes_and_finiteness(v):
+    X, y, q, target_month = panel.build_row(v, include_covariates=True)
+    cov_cols = [c for c in X.columns if c.startswith("cov_")]
+    assert len(cov_cols) == 3
+    assert list(X.columns) == list(q.columns)
+    assert np.isfinite(X.to_numpy()).all()
+    assert np.isfinite(q.to_numpy()).all()
+
+
+@pytest.mark.parametrize("v", COVARIATE_USABLE_DATES[::9], ids=lambda d: d.strftime("%Y-%m"))
+def test_covariate_features_do_not_leak_future_data(v):
+    """Black-box leakage check: blank out every covariate value dated after the covariate's own
+    known-at-v cutoff (per realtime.COVARIATE_LAG) and rebuild the row. If the query row's
+    covariate features are truly leakage-safe, they must be identical either way, since a
+    correct implementation never reads those blanked cells in the first place."""
+    import pandas as pd
+
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                         "data", "processed", "covariates_monthly.csv")
+    raw = pd.read_csv(path, index_col=0)
+    raw.index = pd.PeriodIndex(raw.index, freq="M")
+    v_period = pd.Timestamp(v).to_period("M")
+    tampered = raw.copy()
+    for name, lag in realtime.COVARIATE_LAG.items():
+        cutoff = v_period - lag
+        tampered.loc[tampered.index > cutoff, name] = 999999.0  # absurd sentinel, not just NaN
+
+    before = panel.build_row(v, include_covariates=True)[2]  # query row
+    realtime._covariates.cache_clear()
+    tmp_path = path + ".leaktest.csv"
+    tampered.to_csv(tmp_path)
+    try:
+        orig_read = pd.read_csv
+        def patched_read_csv(p, *a, **kw):
+            return orig_read(tmp_path, *a, **kw) if p == path else orig_read(p, *a, **kw)
+        pd.read_csv = patched_read_csv
+        after = panel.build_row(v, include_covariates=True)[2]
+    finally:
+        pd.read_csv = orig_read
+        realtime._covariates.cache_clear()
+        os.remove(tmp_path)
+
+    pd.testing.assert_frame_equal(before, after)
