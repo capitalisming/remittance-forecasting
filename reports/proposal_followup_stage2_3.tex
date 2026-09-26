@@ -1,0 +1,248 @@
+\documentclass[11pt]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{parskip}
+
+\title{Proposal follow-up: Stage 2 (multimodal signals) and Stage 3 (cross-country panel)\\
+\large Status report on \emph{``Remittance shock 2022: when both the National Bank and the World Bank got it wrong''}}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Where this sits relative to the original proposal}
+
+The original proposal laid out three stages: Stage 1 (baseline models on Kyrgyzstan data),
+Stage 2 (multimodal covariates -- were there early leading indicators for the 2022 shock?), and
+Stage 3 (cross-country panel with Tajikistan and Armenia, to avoid the ``anecdotal single case''
+risk the proposal itself flagged). Stage 1 is done and is the MIDI~2026 submission, already
+through one peer-review pass and page-limited to 8pp -- it is not revisited here. This report
+covers what was attempted for Stages 2 and 3 after that submission was finished, what was found,
+and what remains open. All code and data referenced below are committed to the project
+repository (\texttt{capitalisming/midi2026}, branch \texttt{main-dlkex3}).
+
+\section{Stage 2: multimodal signals}
+
+\subsection{What was asked}
+The proposal's Stage 2 question was direct: with covariates available in real time in
+February--March 2022 (ruble exchange rate, payment-system transaction volumes, border-service
+statistics), could the 2022 shock have been anticipated -- or was it genuinely unpredictable
+from the information available at the time?
+
+\subsection{What data were used}
+Border-service statistics and payment-system transaction data were not obtainable in a reusable
+form; the covariates actually available and already downloaded in an earlier phase of the
+project were FX (RUB/USD, Central Bank of Russia), Brent crude oil (EIA), and the MOEX equity
+index -- proxies for the same underlying shock (the Russia-sanctions channel), not the exact
+series the proposal named, but the closest available.
+
+\subsection{The leakage problem, and why it was previously blocked}
+A prior scope note in the codebase (\texttt{panel.py}) recorded that covariates had been tried
+and set aside: a naively-lagged covariate feature can leak. Concretely, Brent's own publication
+lag (about one month) means that at forecast issue date $v$, the freshest Brent figure known is
+for month $v{-}1$, not month $v$ -- so a feature defined as ``Brent at the month before the
+target'' would, for the query row specifically, reach for a value that does not yet exist.
+
+What this follow-up found: the leakage-safe machinery to handle this correctly
+(\texttt{realtime.covariates\_at()}, with a documented lag per covariate and its own dedicated
+leakage test) already existed in the codebase and was already passing tests -- it had simply
+never been wired into the feature matrix the ridge models train on. The fix
+(\texttt{panel.\allowbreak make\_covariate\_features()}) shifts each covariate's log-change feature by
+\emph{(1 + that covariate's own publication lag)} months, so the query row never reaches past
+what is actually known at $v$. A new black-box leakage test tampers every covariate value dated
+after its known-at-$v$ cutoff with an absurd sentinel and confirms the rebuilt row is unchanged
+-- i.e. the feature construction provably never reads data it should not have access to. All
+1{,}610 tests pass (1{,}553 pre-existing + 57 new).
+
+\subsection{Result}
+Same protocol as the rest of the paper: grid search $\alpha$ over the development period only,
+freeze, then evaluate.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcc}
+\toprule
+ & Main window (n=50) & Shock 2022 (n=8) \\
+\midrule
+Expanding ridge, no covariates & 32.7 & 53.4 \\
+Expanding ridge + FX/Brent/IMOEX & 34.7 & 59.9 \\
+\bottomrule
+\end{tabular}
+\caption{MAE (million USD). Covariates were tuned on the development period ($\alpha=0.1$,
+dev MAE 26.7) using the same alpha grid as the no-covariate baseline.}
+\end{table}
+
+\textbf{The covariates make forecasts worse, not better} -- both in the ordinary period and,
+more importantly, during the shock itself. This is a direct, negative answer to the proposal's
+Stage 2 question: at least for this set of signals (FX, oil, a Moscow equity index) under a
+linear specification, there is no evidence of an early-warning advantage. This is reported as a
+finding, not a failure -- it rules out the more optimistic reading of the 2022 episode (``the
+signal was there, institutions just missed it'') in favour of the harder one already central to
+the main paper: the shock looked, from the available leading indicators, like noise.
+
+\subsection*{Caveats}
+\begin{itemize}
+\item Only three covariates were available; the proposal's own suggestions (payment-system
+  transaction volumes, border-crossing statistics) could behave differently and were not tested.
+\item A linear (ridge) specification was used throughout, for consistency with the rest of the
+  paper; a model that captures nonlinear covariate interactions might do better (or could
+  equally overfit worse -- untested).
+\end{itemize}
+
+\section{Stage 3: cross-country panel}
+
+\subsection{Tajikistan: not feasible with this methodology}
+The proposal named Tajikistan and Armenia. Tajikistan was investigated first and set aside:
+\begin{itemize}
+\item The National Bank of Tajikistan's public statistical bulletin archive
+  (\texttt{nbt.tj/en/statistics/\allowbreak statistical\_bulletin.php}) keeps only \emph{one issue per year}
+  for 2011--2025 -- not the dense monthly captures the real-time protocol needs to reconstruct
+  what was known at each historical issue date. Only the current year (2026) is available
+  month-by-month.
+\item Separately, a July~2026 news item reported that the National Bank of Tajikistan had
+  stopped disclosing remittance figures at all, proposing to replace the term with
+  ``financial inflows'' without giving numbers -- a live transparency problem, not just an
+  archival one.
+\item Official balance-of-payments data for Tajikistan is published annually, with results
+  ``typically ready for publication by April'' of the following year -- a fundamentally
+  different (and far coarser) cadence than the monthly, chronologically-reconstructed protocol
+  this project is built around.
+\end{itemize}
+Conclusion: Tajikistan cannot support the same real-time methodology used for Kyrgyzstan. A
+weaker design (year-end snapshots only) was considered and rejected as not worth doing --
+it would answer a different, much less interesting question.
+
+\subsection{Armenia: data sourced, first result obtained}
+
+\paragraph{Series used.} The Central Bank of Armenia (CBA) publishes two different
+remittance-related series:
+\begin{enumerate}
+\item An official quarterly balance-of-payments remittances series (IMF BPM6 methodology,
+  since 2004), with a \emph{documented} publication lag (``last working day of the third month
+  following the reporting period'') and known to be revised. Wrong frequency for this project's
+  $h=1$-month design -- quarterly data would give roughly 8 shock-window origins across the
+  entire sample, not per shock.
+\item A monthly table, \emph{``Total money transfers of individuals sent to and received from
+  abroad through commercial banks of RA''}, published in CBA's monthly ``Statistical Overview''
+  bulletin, broken down by source country. This is the series actually used: right frequency,
+  and it is literally the input survey (``Report 24'') the official quarterly series is built
+  from, so it is a defensible proxy even though it is not exactly the BPM6 definition (it
+  includes some commercial transfers, not only personal remittances).
+\end{enumerate}
+
+\paragraph{Data collection.} 111 monthly bulletin issues (2015--01 through 2026--07) were
+downloaded and converted to text; 69 parsed cleanly into a usable monthly series after two
+rounds of chasing corrupted downloads and a site-side language mix-up (see below). Three
+distinct URL-naming conventions were used by CBA's website across this period, and the
+2023-onward English-language bulletins could not be located under any pattern tried -- some
+requests silently returned a small placeholder file rather than a 404, and files repaired with
+\texttt{qpdf} turned out on inspection to be the \emph{Armenian}-language edition, not corrupted
+English ones. Coverage as obtained: complete 2015--2019, and complete January--September~2022
+(the entire shock window); 2020 and most of 2021 are missing outright (bulletins never
+successfully retrieved), and 2023 onward could not be recovered in English. Three spot checks
+(2015--12, 2021--12, 2022--03) against the raw bulletin text confirm the parser is reading the
+right numbers; a fourth check (the March-2021 value, read both from the March-2021 issue and
+from the March-2022 issue's year-ago column) came back byte-identical, indicating this series is
+not revised after publication -- unlike NBKR's.
+
+\paragraph{Methodology.} A simplified real-time protocol
+(\texttt{armenia\_realtime.py} / \texttt{armenia\_panel.py} / \texttt{armenia\_backtest.py}):
+because
+the series is not revised, ``known at issue date $v$'' only needs a fixed publication lag, not
+NBKR's vintage/revision machinery. \textbf{The lag itself is an assumption, not a measured
+fact}: one month, chosen because the bulletin for month $m$ already reports month $m$'s own
+transfers, so the effective lag is however long the bulletin itself takes to compile -- no
+official release calendar was found for this specific table (only for the quarterly series). Because 2020--2021 are missing, a seasonal (lag-12) feature is not usable for the shock-window
+query rows that matter here (they would need the corresponding 2021 months); the Armenia model
+therefore uses momentum lags only ($z_{t-1}, z_{t-2}, z_{t-3}$), a departure from the main
+paper's $(1,2,3,12)$ specification. The comparison baseline is last-value naive (repeat the most
+recently known month), not seasonal naive, for the same reason.
+
+\paragraph{Result.} Same dev-tune-then-freeze protocol ($\alpha$ grid-searched on 2015--06
+through 2019--12, frozen at $\alpha=0.3$, dev MAE \$14.5M).
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lc}
+\toprule
+ & Shock 2022 (n=8) \\
+\midrule
+Expanding ridge (lags 1--3) & 203.0 \\
+Last-value naive & 163.4 \\
+\bottomrule
+\end{tabular}
+\caption{MAE, million USD.}
+\end{table}
+
+\textbf{Naive beats the fitted model during the shock in Armenia too} -- the same qualitative
+pattern as the Kyrgyzstan result in the main paper (a model extrapolating a recently-observed
+trend is worst off exactly when that trend reverses). This is a real, if preliminary,
+cross-country replication of the paper's central mechanism, obtained from an independent data
+source, a different currency, a different country, and a different (undocumented, assumed)
+publication-lag regime.
+
+\subsection*{Caveats -- read before using this result for anything beyond a supervisor update}
+\begin{itemize}
+\item \textbf{$n=8$}, same small-sample caveats as the Kyrgyzstan shock window in the main paper,
+  without that paper's bootstrap confidence intervals (not yet computed for Armenia).
+\item \textbf{No ``ordinary period'' comparison exists.} The 2020--2021 gap sits exactly where a
+  pre-shock evaluation window would go, so unlike the main paper's Table~1, there is no evidence
+  yet on whether the fitted model beats naive \emph{outside} the shock for Armenia -- only that
+  it loses \emph{during} it. Without that contrast, this result is suggestive of the mechanism
+  but does not yet demonstrate the reversal the main paper documents for Kyrgyzstan.
+\item \textbf{Publication lag is assumed, not measured} (see above).
+\item \textbf{No seasonal term}, unlike the main paper's model.
+\item \textbf{The series itself is a proxy} (total bank transfers, not strictly BPM6 personal
+  remittances).
+\item Coverage stops at January 2023; nothing is known about 2023--2026 Armenia behaviour.
+\end{itemize}
+
+\section{Where the original proposal's risks stand now}
+
+The proposal itself flagged a risk: that the study would ``be perceived as an isolated case
+study (anecdotal evidence)'' without a comparative panel. That risk is now partially addressed
+-- there is a second, independent country showing the same qualitative pattern -- but not fully:
+the Armenia result lacks the statistical rigor (bootstrap CIs, a proper main-window comparison,
+a validated publication-lag assumption) that makes the Kyrgyzstan result in the MIDI paper
+defensible on its own. It should be described, if used, as \emph{preliminary supporting
+evidence}, not as a second confirmed case.
+
+\section{Summary against the proposal}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{p{3.2cm}p{9.3cm}}
+\toprule
+Stage & Status \\
+\midrule
+1 (baseline) & Done -- MIDI 2026 submission, 8pp, reviewed. \\
+2 (multimodal signals) & Done. Negative result: FX/Brent/IMOEX do not help, even hurt. \\
+3a (Tajikistan) & Investigated, not feasible -- annual data only, and recent disclosure
+  problems at the National Bank of Tajikistan. \\
+3b (Armenia) & Data sourced (69 of 97 possible months, 2015--2023), pipeline built, first
+  result obtained: same shock-period pattern as Kyrgyzstan. Preliminary -- see caveats above. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Recommended next steps, if this is pursued further}
+\begin{enumerate}
+\item Fill the Armenia 2020--2021 gap (needed for both a seasonal feature and a proper
+  main-window comparison) -- requires a working internet connection to \texttt{cba.am}, which
+  this project's sandboxed environment does not have; a further manual download round is needed
+  the same way this round was done.
+\item Confirm the assumed one-month Armenia publication lag against an actual CBA release
+  calendar, if one can be found.
+\item Compute bootstrap confidence intervals for the Armenia shock-window comparison, matching
+  the main paper's treatment of the Kyrgyzstan result.
+\item Decide, with the supervisor, whether Stage 2/3 material belongs in a revised/extended
+  version of the MIDI paper (would require cutting other content to stay within any page limit)
+  or is better positioned as a separate follow-up paper once Armenia's data and statistics are
+  complete.
+\end{enumerate}
+
+\end{document}
