@@ -1,0 +1,512 @@
+3
+4
+5
+6
+7
+8
+9
+10
+11
+                        Inflow of Total Money Transfers
+     thous US dollars
+
+
+
+
+12
+                   Outflow of Total Money Transfers
+thous US dollars
+
+
+
+
+                                                      13
+14
+million US dollars
+
+
+
+
+               15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+General Government
+
+     Short-term
+
+         Currency and deposits
+
+         Debt securities
+
+         Loans
+
+         Trade credits and advances
+
+         Other debt liabilities
+
+     Long -term
+
+         Special drawing rights (SDRs), Allocation
+
+         Currency and deposits
+
+         Debt securities
+
+         Loans
+
+         Trade credits and advances
+
+         Other debt liabilities
+
+Central Bank
+
+     Short-term
+
+         Currency and deposits
+
+         Debt securities
+
+         Loans
+
+         Trade credits and advances
+
+         Other debt liabilities
+
+     Long -term
+
+         Special drawing rights (SDRs), Allocation
+
+         Currency and deposits
+
+         Debt securities
+
+         Loans
+
+         Trade credits and advances
+
+         Other debt liabilities
+
+Deposit-taking corporations, except the Central bank
+
+     Short-term
+
+         Currency and deposits
+
+         Debt securities
+
+         Loans
+
+         Trade credits and advances
+
+         Other debt liabilities
+
+     Long -term
+
+         Currency and deposits
+
+         Debt securities
+
+         Loans
+
+         Trade credits and advances
+
+         Other debt liabilities
+
+
+
+26
+Other Sectors
+
+    Short-term
+
+        Currency and deposits
+
+        Debt securities
+
+        Loans
+
+        Trade credits and advances
+
+        Other debt liabilities
+
+    Long -term
+
+        Currency and deposits
+
+        Debt securities
+
+        Loans
+
+        Trade credits and advances
+
+        Other debt liabilities
+
+Direct Investment: Intercompany lending
+
+ Direct investor in direct investment enterprises
+ Direct investment enterprises in direct investor (reverse
+ investment)
+
+ Between fellow enterprises
+
+GROSS EXTERNAL DEBT
+
+
+
+
+                                                             27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+     mln drams
+
+
+
+
+                 Treasury Notes
+     mln drams
+
+
+
+
+                 Treasury Bonds
+     mln drams
+
+
+
+
+50
+-
+
+
+
+
+    51
+52
+53
+54
+        -   -
+
+        -   -
+
+        -   -
+
+        -   -
+
+        -   -
+
+        -   -
+
+
+
+-   -   -   -
+
+-   -   -   -
+
+        -   -
+
+        -   -
+
+-   -   -   -
+
+        -   -
+
+
+
+
+        -   -
+
+        -   -
+
+        -   -
+
+        -   -
+
+        -   -
+
+        -   -
+
+
+
+
+                55
+         -       -       -
+
+                         -
+
+                         -
+
+         -           -
+
+         -           -
+
+         -
+
+     -   -       -
+
+     -       -   -
+
+             -           -
+
+                         -
+
+         -           -
+
+         -           -
+
+
+
+     -           -
+
+     -       -   -
+
+             -           -
+
+                         -
+
+         -           -
+
+         -           -
+
+
+
+     -           -
+
+     -       -   -
+
+             -
+
+                     -   -
+
+         -           -
+
+         -           -
+
+         -
+
+     -   -       -       -
+
+     -       -   -
+
+             -           -
+
+     -       -       -   -
+
+
+
+
+56
+    -       -   -
+
+        -       -
+
+                -
+
+    -
+
+    -
+
+    -
+
+-   -       -
+
+-       -   -
+
+        -       -
+
+                -
+
+    -
+
+    -
+
+
+
+-           -
+
+-       -   -
+
+        -       -
+
+                -
+
+    -
+
+    -
+
+
+
+-           -
+
+-       -   -
+
+        -
+
+                -
+
+    -
+
+    -
+
+    -
+
+-   -       -   -
+
+-       -   -
+
+        -       -
+
+-       -       -
+
+
+
+
+                57
+         -       -   -
+
+             -       -
+
+                     -
+
+         -
+
+         -
+
+         -
+
+     -   -       -
+
+     -       -   -
+
+             -       -
+
+                     -
+
+         -
+
+         -
+
+
+
+     -           -
+
+     -       -   -
+
+             -       -
+
+                     -
+
+         -
+
+         -
+
+
+
+     -           -
+
+     -       -   -
+
+             -
+
+                     -
+
+         -
+
+         -
+
+         -
+
+     -   -       -   -
+
+     -       -   -
+
+             -       -
+
+     -       -       -
+
+
+
+
+58
+AMD/USD Exchange Rate
+
+
+
+
+AMD/EUR Exchange Rate
+
+
+
+
+AMD/RUB Exchange Rate
+
+
+
+
+                        59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+2700000
+2400000
+2100000
+1800000
+1500000
+1200000
+ 900000
+ 600000
+ 300000
+      0
+
+
+
+
+          71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+

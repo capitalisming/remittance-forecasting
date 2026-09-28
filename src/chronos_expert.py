@@ -11,12 +11,17 @@ import realtime
 
 _PIPE = None
 MODEL_NAME = "amazon/chronos-bolt-small"
+# Pinned to the exact HF Hub commit this study's results were produced with (obtained 2026-09-24
+# via HfApi().model_info("amazon/chronos-bolt-small").sha), so a future push to the model repo
+# can't silently change results out from under the paper's numbers.
+MODEL_REVISION = "772f3d25d38aec6d914c8949dab4462e2d46f5d8"
 
 
 def get_pipeline():
     global _PIPE
     if _PIPE is None:
-        _PIPE = BaseChronosPipeline.from_pretrained(MODEL_NAME, device_map="cpu", torch_dtype=torch.float32)
+        _PIPE = BaseChronosPipeline.from_pretrained(MODEL_NAME, revision=MODEL_REVISION,
+                                                      device_map="cpu", torch_dtype=torch.float32)
     return _PIPE
 
 

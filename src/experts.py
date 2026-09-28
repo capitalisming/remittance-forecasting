@@ -38,14 +38,14 @@ def seasonal_naive(X_train, y_train, x_query, target_month, **_ignored):
     return float(np.exp(y_train.iloc[-1])) if len(y_train) else np.nan
 
 
-def backtest(issue_dates, forecast_fn, **kwargs):
+def backtest(issue_dates, forecast_fn, include_covariates=False, **kwargs):
     """forecast_fn(X_train, y_train, x_query, target_month, **kwargs) -> point forecast (level).
     Returns a DataFrame indexed by issue_date with columns target_month, forecast, actual."""
     truth = panel.first_release_series()
     rows = []
     for v in issue_dates:
         try:
-            X, y, q, target_month = panel.build_row(v)
+            X, y, q, target_month = panel.build_row(v, include_covariates=include_covariates)
         except AssertionError:
             continue  # not enough lag history yet
         if len(y) < 13:
