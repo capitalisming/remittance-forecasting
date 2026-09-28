@@ -8,6 +8,10 @@
 \usepackage{amsmath}
 \usepackage{hyperref}
 
+\setlength{\textfloatsep}{2mm plus 2pt minus 2pt}
+\setlength{\intextsep}{2mm plus 2pt minus 2pt}
+\setlength{\belowcaptionskip}{2pt}
+
 \begin{document}
 
 \title{Publication Delay and the Value of Online Adaptation in Monthly Remittance Forecasting}
@@ -65,10 +69,7 @@ verifying the absence of look-ahead leakage; (ii) a measurement of how much of a
 combination's advantage survives this delay, including a stress test built around a retroactive
 target redefinition we did not anticipate when the study was designed; and (iii) we are not aware
 of prior work evaluating a zero-shot time-series foundation model as one voice in an
-online-aggregated ensemble under delayed feedback, rather than as a standalone baseline. Set the
-country and episode aside, and the remaining contribution -- a protocol for measuring how
-publication delay erodes adaptation's value, and a demonstration that a target's own definition
-can change under the forecaster without warning -- is not specific to Kyrgyzstan or remittances.
+online-aggregated ensemble under delayed feedback, rather than as a standalone baseline.
 
 \section{Related Work}
 
@@ -82,11 +83,11 @@ tracking a changing best expert~\cite{herbster1998tracking}, and polynomially we
 such as ML-Poly~\cite{gaillard2014second}, implemented in \texttt{opera}~\cite{opera}.
 
 \textbf{Delayed feedback and real-time evaluation.} The data-stream literature studies learning
-when labels arrive late (\emph{verification latency}~\cite{gama2014survey}), mostly for fast
-classification streams; delayed/optimistic online learning has formal regret
-guarantees~\cite{joulani2013online,flaspohler2021online}, including a subseasonal-climate
-application~\cite{flaspohler2021online} sharing our motivation. We differ in using fixed monthly
-lags on a short macroeconomic series and evaluating combination rules already used in practice
+when labels arrive late (\emph{verification latency}~\cite{gama2014survey}); delayed and optimistic
+online learning has formal regret guarantees~\cite{joulani2013online,flaspohler2021online},
+including a subseasonal-climate application~\cite{flaspohler2021online} sharing our motivation. We
+differ in using fixed monthly lags on a short macroeconomic series and evaluating combination
+rules already used in practice
 rather than proposing new regret-optimal algorithms. Macroeconomic forecasting has long
 distinguished evaluation on revised data from data actually available at the
 time~\cite{croushore2001realtime}, rarely applied to remittance forecasting, where published
@@ -119,7 +120,7 @@ earliest vintage reporting it under the same accounting definition as the vintag
 (defined next). Within-definition revisions are small: at a materiality threshold of \$0.02
 million (below the source spreadsheets' rounding resolution), 9 of 97 consecutive vintage pairs
 revise any shared month at all, by less than 4\% in all but one case; counting any nonzero float
-difference instead gives 12, three sub-threshold (\texttt{src/check\_revisions.py}).
+difference instead gives 12, three sub-threshold.
 
 Second, in a vintage dated 2024-02-14, NBKR redefined the series -- from transfers through
 money-transfer systems to all cross-border instruments, including mobile banking and e-wallets --
@@ -137,6 +138,15 @@ function is tested against 1{,}553 automated pytest checks, including that no fo
 observes any month past its true publication cutoff and, for all 227 issue dates before
 2024-02-14, that no value reaching the forecaster is sourced from a post-redefinition vintage. All
 tests pass.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig1_series.pdf}
+\caption{Monthly remittance inflows, 2018--2026: latest (revised) vs.\ first-release values. The
+2022 shock shows no decline in either series; the 2023--24 redefinition opens a persistent gap
+between first-release and latest values.}
+\label{fig:series}
+\end{figure}
 
 \section{Methodology}
 \label{sec:methodology}
@@ -161,9 +171,9 @@ period alone; $\alpha=0.1$ chosen.
 
 \textbf{E2 -- Rolling ridge.} The same specification, refit at every issue date on only the most
 recent $w$ eligible rows. Window $w \in \{24, 36, 48\}$ and, separately, $\alpha$ (same grid as E1)
-were each selected on the development period alone; $w=48$, $\alpha=1$ chosen. E1/E2 are tuned to
-different $\alpha$ because their training-set size, and hence the bias-variance trade-off the
-penalty corrects for, differs by construction.
+were each selected on the development period alone; $w=48$, $\alpha=1$ chosen (E1/E2 differ in
+$\alpha$ because training-set size, and the bias-variance trade-off it corrects for, differs by
+construction).
 
 \textbf{E3 -- Chronos-Bolt (zero-shot).} At each issue date, pretrained Chronos-Bolt-small
 \cite{ansari2024chronos} (HF Hub revision \texttt{772f3d2}, pinned) is given the same
@@ -201,8 +211,7 @@ months reported as a sensitivity; at $n=8$ these give 6, 3 and 1 valid block-sta
 the 12-month block is degenerate and even the 3-month block draws from a coarse grid, stated
 wherever a shock-window interval is reported. No test of conditional predictive ability is
 reported since its assumptions are undemonstrated here; non-significance is never presented as
-evidence of equivalence. This is a forecast-accuracy comparison, with no causal claim about why
-any method performs as it does.
+evidence of equivalence.
 
 \section{Results}
 \label{sec:results}
@@ -244,13 +253,20 @@ either cause: a forecaster trained honestly in real time is not protected agains
 definition changing retroactively without warning, and that is the object of this stress test, not
 a limitation of it.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig2_mae_by_window.pdf}
+\caption{MAE by expert and window (Table~\ref{tab:expert-race}). Naive is worst on Main but best
+on Shock; every fitted model reverses along with it.}
+\label{fig:mae-bars}
+\end{figure}
+
 \subsection{Does the adaptive combiner recover the lost ground?}
 
 \begin{table}[t]
 \centering
 \caption{Fixed-share vs.\ equal-weight, MAE (million USD), with paired moving-block bootstrap 95\%
-CIs on the difference (positive = fixed-share worse). Block length 3 used for shock-window CIs
-given the small $n$.}
+CIs on the difference (positive = fixed-share worse); block length 3 for the shock window.}
 \label{tab:fs-vs-eq}
 \small
 \begin{tabular}{lcc}
@@ -301,16 +317,16 @@ over the point estimate that otherwise looks best on average.
 \textbf{No causal claims; small-sample inference.} This is a forecast-accuracy comparison, not a
 causal one. The shock window has 8 origins and the transition window 4; the latter is reported
 descriptively only, without a CI, and an absent interval should not be read as an absent effect.
-Bootstrap intervals on the shock window are sensitive to block length by construction and are
-reported with that caveat rather than as a single number.
+Bootstrap intervals on the shock window are sensitive to block length; reported with that caveat,
+not as a single number.
 
 \textbf{Multiple comparisons.} Section~\ref{sec:results} reports seven pairwise 95\% bootstrap
 intervals without a multiplicity correction (naive Bonferroni: family-wise error up to
 $1-0.95^7\approx30\%$); we do not correct because the comparisons share data and overlapping
 windows and are not independent, which would make Bonferroni overly conservative the other way.
-The one interval excluding zero outside the pre-registered fixed-share-vs-equal-weight comparison
--- fixed-share vs.\ naive, shock window -- is also what the paper's mechanism predicts, evidence
-against a multiplicity artifact but not proof.
+The one interval excluding zero outside the pre-registered comparison (fixed-share vs.\ naive,
+shock window) matches the paper's predicted mechanism -- evidence against a multiplicity artifact,
+not proof.
 
 \textbf{TSFM pretraining exposure; definitional discontinuity.} We cannot rule out Chronos's
 pretraining corpus containing series correlated with 2022 macroeconomic conditions; its errors are
@@ -320,9 +336,8 @@ mixes forecasting failure and measurement discontinuity in a way the data cannot
 report both readings rather than choosing one.
 
 \textbf{Scope.} Results are specific to this series, period and model families; deep sequence
-models trained from scratch were not evaluated, and covariates (FX, oil prices) were excluded from
-the pilot because their own publication lags could not be aligned with the horizon without a
-separate leakage risk, left for future work.
+models were not evaluated, and covariates (FX, oil prices) were excluded because their own
+publication lags could not be aligned with the horizon without a separate leakage risk.
 
 \section{Conclusion}
 
