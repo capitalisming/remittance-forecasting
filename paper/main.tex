@@ -149,15 +149,15 @@ log-transformed -- it is given the series in levels, its native input scale.
 \textbf{Lag choice.} E1/E2 share predictors $z_{t-1}$, $z_{t-2}$, $z_{t-3}$, $z_{t-12}$ (short-run
 momentum plus year-over-year seasonality) and eleven monthly indicators, fixed a priori rather
 than grid-searched like $\alpha$, $w$ and the fixed-share hyperparameters below. A post hoc,
-development-only check against seven alternatives (\texttt{src/\allowbreak tune\_lags.py}) finds a marginally
-better set, $\{1,3,6,12\}$ (6.3\%/2.7\% lower development MAE for E1/E2) -- a gap on the order of
-the shock-window bootstrap noise reported in Section~\ref{sec:results}; we keep the frozen set
-rather than re-tuning the full downstream pipeline for a difference this small.
+development-only check against seven alternatives finds a marginally better set, $\{1,3,6,12\}$
+(6.3\%/2.7\% lower development MAE for E1/E2) -- on the order of the shock-window bootstrap noise
+in Section~\ref{sec:results}; we keep the frozen set rather than re-tuning the pipeline for a
+difference this small.
 
 \textbf{E1 -- Expanding ridge.} Ridge regression, refit at every issue date on all months whose
 predictors are fully known at $v$, using the training set growing from the start of the series.
 $\alpha \in \{0.01, 0.03, 0.1, 0.3, 1, 3, 10, 30, 100\}$ was grid-searched on the development
-period alone; $\alpha=0.1$ chosen (\texttt{src/tune\_ridge.py}).
+period alone; $\alpha=0.1$ chosen.
 
 \textbf{E2 -- Rolling ridge.} The same specification, refit at every issue date on only the most
 recent $w$ eligible rows. Window $w \in \{24, 36, 48\}$ and, separately, $\alpha$ (same grid as E1)
@@ -179,10 +179,10 @@ p_{k,n} &= (1-\alpha)\,q_{k,n} + \frac{\alpha}{K}, \quad K=4,
 where $\ell_{k,n} = \min(|\hat y_{k,n} - y_n| / c,\ 1)$ is a clipped loss and $n$ indexes
 \emph{feedback events}: an outcome for month $m$ is eligible to update weights only once known
 under Section~\ref{sec:data}'s protocol, so a weight update at $v$ typically uses feedback from
-roughly three months earlier, not the immediately preceding month. $c$ is fixed at the 95th
-percentile of pooled absolute errors on the development period ($c=74.66$) and never re-estimated.
-$\eta \in \{0.5,1,2,4\}$ and $\alpha \in \{0,0.01,0.05\}$ are grid-searched on the development
-period only ($\eta=0.5$, $\alpha=0.05$ chosen); weights start uniform. \textbf{Baselines:} seasonal
+roughly three months earlier, not the immediately preceding month. Hyperparameters $\eta=0.5$,
+$\alpha=0.05$ and the loss-clipping constant $c=74.66$ (95th percentile of pooled absolute errors)
+were grid-searched on the development period only and never re-estimated; weights start uniform.
+\textbf{Baselines:} seasonal
 naive; expanding ridge alone (routine retraining); equal-weight averaging of all four candidates
 with no adaptation; the tuned fixed-share combination.
 
