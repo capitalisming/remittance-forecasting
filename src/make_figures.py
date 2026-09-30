@@ -117,39 +117,38 @@ def fig2_mae_by_window():
 
 def fig_combined():
     import matplotlib.dates as mdates
-    import numpy as np
     rt = pd.read_csv("../data/processed/release_table.csv")
     rt["ref_month"] = pd.PeriodIndex(rt["ref_month"], freq="M")
     rt = rt.dropna(subset=["latest"])
     rt = rt[rt["ref_month"] >= pd.Period("2018-01", "M")]
     t = rt["ref_month"].dt.to_timestamp()
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(5.1, 1.55), gridspec_kw={"width_ratios": [1.35, 1]})
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(5.1, 1.75), gridspec_kw={"width_ratios": [1.35, 1]})
 
     ss = pd.Period("2022-02", "M").to_timestamp(); se = (pd.Period("2022-09", "M") + 1).to_timestamp()
     ts = panel.TRANSITION_ZONE[0].to_timestamp(); te = (panel.TRANSITION_ZONE[-1] + 1).to_timestamp()
     ax1.axvspan(ss, se, color=SHOCK_COLOR, alpha=0.18, lw=0, zorder=0)
     ax1.axvspan(ts, te, color=TZ_COLOR, alpha=0.22, lw=0, zorder=0)
-    ax1.plot(t, rt["latest"], color=COLOR_1, lw=1.2, label="Latest", zorder=3)
-    ax1.plot(t, rt["first_release"], color=COLOR_2, lw=1.0, ls="--", label="First release", zorder=2)
-    ymax = 480
-    ax1.set_ylim(0, ymax); ax1.set_yticks([0, 100, 200, 300])
+    ax1.plot(t, rt["latest"], color=COLOR_1, lw=1.2, zorder=3)
+    fr = rt[rt["ref_month"].between(pd.Period("2022-12", "M"), pd.Period("2024-05", "M"))]
+    ax1.plot(fr["ref_month"].dt.to_timestamp(), fr["first_release"], color=COLOR_2, lw=1.3, ls="--", zorder=4)
+    ax1.set_ylim(0, 400); ax1.set_yticks([0, 100, 200, 300])
+    ax1.text(pd.Timestamp("2018-03-01"), 335, "Latest (revised)", ha="left", va="bottom", fontsize=7, color=COLOR_1)
+    ax1.text(pd.Timestamp("2023-02-01"), 118, "First release", ha="center", va="top", fontsize=7, color=COLOR_2)
     ax1.text(ss + (se - ss) / 2, 12, "shock", ha="center", va="bottom", fontsize=6.5, color=SHOCK_COLOR)
     ax1.text(te + pd.Timedelta(days=60), 12, "redefinition", ha="left", va="bottom", fontsize=6.5, color="#5d4fb0")
     ax1.set_ylabel("Million USD")
     ax1.xaxis.set_major_locator(mdates.YearLocator(2))
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
-    ax1.legend(loc="upper left", frameon=False, ncol=2, handlelength=1.8, fontsize=7, bbox_to_anchor=(0, 1.02))
     ax1.set_title("(a) Remittance inflows", fontsize=8, loc="left", pad=3)
 
     df = pd.read_csv("../results/expert_comparison_eval.csv", index_col=0, parse_dates=True)
     df["target_month"] = pd.PeriodIndex(df.index, freq="M") + 1
     df = df.dropna(subset=["naive"])
     tz = panel.TRANSITION_ZONE
-    main_m = ~df.target_month.isin(tz)
-    shock_m = df.target_month.astype(str).between("2022-02", "2022-09")
-    tz_m = df.target_month.isin(tz)
-    wins = [("Main", main_m), ("Shock", shock_m), ("Transition", tz_m)]
+    wins = [("Main", ~df.target_month.isin(tz)),
+            ("Shock", df.target_month.astype(str).between("2022-02", "2022-09")),
+            ("Transition", df.target_month.isin(tz))]
     cols = ["naive", "expanding_ridge", "rolling_ridge_w48", "chronos_zeroshot"]
     labs = ["Naive", "E1", "E2", "E3"]
     colors = [COLOR_3, COLOR_1, COLOR_4, COLOR_2]
