@@ -46,7 +46,7 @@ def fig_combined():
     rt = rt[rt["ref_month"] >= pd.Period("2018-01", "M")]
     t = rt["ref_month"].dt.to_timestamp()
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(5.1, 1.75), gridspec_kw={"width_ratios": [1.35, 1]})
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(5.1, 1.6), gridspec_kw={"width_ratios": [1.35, 1]})
 
     ss = pd.Period("2022-02", "M").to_timestamp(); se = (pd.Period("2022-09", "M") + 1).to_timestamp()
     ts = panel.TRANSITION_ZONE[0].to_timestamp(); te = (panel.TRANSITION_ZONE[-1] + 1).to_timestamp()
