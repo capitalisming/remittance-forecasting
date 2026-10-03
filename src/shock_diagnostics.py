@@ -43,3 +43,29 @@ print("\nshock mean signed error (forecast - actual):",
 print("signed errors by shock month:")
 print(pd.DataFrame({k: (v.forecast - v.actual).round(1).values for k, v in sh.items()},
                    index=sh["naive"].target_month))
+
+# --- additions for the revised draft -------------------------------------------------------
+print("\n=== Ordinary window (main minus shock months), n = %d ===" % (windows["main"] & ~windows["shock"]).sum())
+ordm = windows["main"] & ~windows["shock"]
+d = df[ordm]
+mae = d[cols].mean()
+mape = d[cols].div(d.actual, axis=0).mean() * 100
+print(pd.DataFrame({"MAE": mae, "rel_to_naive": mae / mae["naive"], "MAPE%": mape}).round(2))
+
+import json
+c = json.load(open("../results/fixed_share_config.json"))["clip_c"]
+print("\n=== share of feedback events with |error| > c (loss clipped at 1), c = %.2f ===" % c)
+rows = {}
+for name, m in {"all": pd.Series(True, index=df.index), **windows}.items():
+    rows[name] = (df.loc[m, cols] > c).mean().mul(100).round(1)
+print(pd.DataFrame(rows).T.to_string())
+print("pooled over four experts:", {n: round(float((df.loc[m, cols] > c).to_numpy().mean() * 100), 1)
+      for n, m in {"all": pd.Series(True, index=df.index), **windows}.items()})
+
+rel = pd.Timestamp("2024-11-26")
+post = df.index > rel
+print("\n=== Chronos-Bolt released 2024-11-26: origins before (n=%d) vs after (n=%d) ===" % ((~post).sum(), post.sum()))
+for lab, m in (("before", ~post), ("after", post)):
+    s = df.loc[m, cols].mean()
+    print(lab, "MAE", s.round(1).to_dict(), " chronos/naive = %.2f, E1/naive = %.2f" % (
+        s["chronos_zeroshot"] / s["naive"], s["expanding_ridge"] / s["naive"]))

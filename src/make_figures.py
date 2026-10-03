@@ -57,7 +57,7 @@ def fig_combined():
     ax1.plot(fr["ref_month"].dt.to_timestamp(), fr["first_release"], color=COLOR_2, lw=1.3, ls="--", zorder=4)
     ax1.set_ylim(0, 400); ax1.set_yticks([0, 100, 200, 300])
     ax1.text(pd.Timestamp("2018-03-01"), 335, "Latest (revised)", ha="left", va="bottom", fontsize=7, color=COLOR_1)
-    ax1.text(pd.Timestamp("2023-02-01"), 118, "First release", ha="center", va="top", fontsize=7, color=COLOR_2)
+    ax1.text(pd.Timestamp("2023-02-01"), 132, "First release", ha="center", va="top", fontsize=7, color=COLOR_2)
     ax1.text(ss + (se - ss) / 2, 12, "shock", ha="center", va="bottom", fontsize=6.5, color=SHOCK_COLOR)
     ax1.text(te + pd.Timedelta(days=60), 12, "redefinition", ha="left", va="bottom", fontsize=6.5, color="#5d4fb0")
     ax1.set_ylabel("Million USD")
@@ -69,8 +69,8 @@ def fig_combined():
     df["target_month"] = pd.PeriodIndex(df.index, freq="M") + 1
     df = df.dropna(subset=["naive"])
     tz = panel.TRANSITION_ZONE
-    wins = [("Main", ~df.target_month.isin(tz)),
-            ("Shock", df.target_month.astype(str).between("2022-02", "2022-09")),
+    shock = df.target_month.astype(str).between("2022-02", "2022-09")
+    wins = [("Ordinary", ~df.target_month.isin(tz) & ~shock), ("Shock", shock),
             ("Transition", df.target_month.isin(tz))]
     cols = ["naive", "expanding_ridge", "rolling_ridge_w48", "chronos_zeroshot"]
     labs = ["Naive", "E1", "E2", "E3"]
