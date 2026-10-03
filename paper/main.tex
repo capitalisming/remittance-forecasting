@@ -61,9 +61,8 @@ routine retraining and simple averaging. The study fits MIDI's theme of machine 
 digital settings: how online-adapting systems behave when digitally published data arrive late.
 
 \textbf{Contribution.} None of the three forecasting components is new; the contribution is
-methodological and empirical: (i) a chronologically correct evaluation protocol, reconstructed
-from 99 archived data versions, with an automated test suite (1{,}553 checks) against look-ahead
-leakage; (ii) a measurement, including a zero-delay counterfactual, of how much of adaptive
+methodological and empirical: (i) a chronologically correct protocol reconstructed from 99 archived
+data versions, with 1{,}553 automated checks against look-ahead leakage; (ii) a measurement, including a zero-delay counterfactual, of how much of adaptive
 combination's advantage survives publication delay, with a stress test around an unanticipated
 retroactive target redefinition; and (iii) to our knowledge, a first look at a zero-shot
 time-series foundation model (TSFM) as one voice in an online-aggregated ensemble under delayed
@@ -81,8 +80,7 @@ expert~\cite{herbster1998tracking}.
 \textbf{Delayed feedback and real-time evaluation.} The data-stream literature studies learning
 when labels arrive late (\emph{verification latency}~\cite{gama2014survey}); delayed online
 learning has formal regret guarantees~\cite{joulani2013online,flaspohler2021online}, including a
-subseasonal-climate application sharing our motivation. We use fixed monthly lags on a short
-macroeconomic series and combination rules already used in practice. Macroeconomic forecasting
+subseasonal-climate application sharing our motivation. Macroeconomic forecasting
 distinguishes evaluation on revised data from data available at the
 time~\cite{croushore2001realtime}; remittance studies typically use the latest revised series.
 
@@ -125,9 +123,8 @@ revision noise outside the 2023--24 window. \textbf{Leakage testing:} 1{,}553 au
 confirm that no origin observes a month past its publication cutoff and, for all 227 issue dates
 before 2024-02-14, that no value comes from a post-redefinition vintage; all pass.
 
-\textbf{Code and data.} The code, the 99 archived vintages with provenance and the 1{,}553 leakage
-checks are in a private repository (\url{https://github.com/capitalisming/midi2026}), opened to
-reviewers on request and public on acceptance.
+\textbf{Code and data.} Code, the 99 archived vintages and the 1{,}553 leakage checks are in a private
+repository (\url{https://github.com/capitalisming/midi2026}), open to reviewers on request.
 
 \section{Methodology}
 \label{sec:methodology}
@@ -150,7 +147,7 @@ $\lambda=1$).
 \textbf{E3 -- Chronos-Bolt (zero-shot).} At each issue date, pretrained Chronos-Bolt-small
 \cite{ansari2024chronos,chronosbolt} (HF Hub revision \texttt{772f3d2}, pinned) is given the same
 real-time-eligible history as E1/E2, in levels, and asked for a one-step-ahead forecast; the
-predicted median is the point forecast. No parameters are fit on our data.
+predicted median is the point forecast; nothing is fit on our data.
 
 \textbf{Combination.} The three experts, plus a seasonal-naive reference (repeat month $t-12$),
 are combined with the recursive fixed-share rule~\cite{herbster1998tracking}:
@@ -182,8 +179,7 @@ and 3 for $b=3,6$); a 12-month block is truncated to the whole sample, so its in
 the point estimate and shock-window intervals are coarse. Two experiments probe the combiner: \textbf{Experiment D} adds $k \in \{1,2,3\}$ months
 of artificial delay to feedback, and the \textbf{zero-delay counterfactual} (Experiment Z) makes
 month $m$'s outcome usable at the end of month $m$, crossed with $\eta \in \{0.5,1,2,4\}$; the
-experts' forecasts are unchanged. No conditional-predictive-ability test is reported (assumptions undemonstrated); non-significance is
-never presented as equivalence.
+experts' forecasts are unchanged. Non-significance is never presented as equivalence.
 
 \section{Results}
 \label{sec:results}
@@ -272,9 +268,11 @@ Feedback & $\eta$ & Ordinary ($n{=}41$) & Shock ($n{=}6$) & Transition ($n{=}4$)
 \multicolumn{2}{l}{Seasonal naive}  & 51.7 & \textbf{35.2} & \textbf{49.3} \\
 \multicolumn{2}{l}{Equal weights}   & 32.8 & 44.5 & 85.7 \\
 Real lag   & 0.5 (tuned) & 34.0 & 46.0 & 91.5 \\
+Real lag   & 1           & 35.6 & 45.6 & 94.6 \\
 Real lag   & 2           & 37.5 & 45.0 & 98.6 \\
 Real lag   & 4           & 38.9 & 45.3 & 102.1 \\
 Immediate  & 0.5         & 31.9 & 45.6 & 92.2 \\
+Immediate  & 1           & 31.5 & 45.0 & 95.2 \\
 Immediate  & 2           & 30.9 & 45.0 & 96.4 \\
 Immediate  & 4           & 30.1 & 44.2 & 90.3 \\
 Real lag   & 4, unclipped      & 37.4 & 45.1 & 102.2 \\
@@ -292,14 +290,13 @@ naive's mean weight rises to 0.69. Naive was the worst expert in ordinary months
 learning from history cannot rationally commit to it. Second, delay matters in ordinary months and
 interacts with the learning rate: with the real lag a faster rate hurts (34.0 to 38.9 from $\eta=0.5$
 to 4), with immediate feedback it helps (31.9 to 30.1). Immediate feedback lowers ordinary-month MAE
-by 2.1 (95\% CI $-3.7$ to $-1.1$) at $\eta=0.5$ and by 8.8 ($-16.7$ to $-3.7$) at $\eta=4$ (block 3;
-$-4.2$ and $-6.6$ at $\eta=1,2$, intervals also excluding zero). In the transition window 75\% of expert
+by 2.1 (95\% CI 1.1 to 3.7) at $\eta=0.5$ and by 8.8 (3.7 to 16.7) at $\eta=4$ (block 3; by 4.2 and
+6.6 at $\eta=1,2$, intervals also excluding zero). In the transition window 75\% of expert
 losses are clipped, so updates carry little information and no setting avoids the loss.
 
 Experiment D agrees: extra delay $k \in \{1,2,3\}$ changes main-window MAE by at most 0.21 (all CIs
-include zero) at the slow tuned $\eta=0.5$. Setting $\alpha=0$ (no weight floor) improves main-window
-MAE to 33.3 (from 35.9) but worsens shock-window MAE to 53.0 (from 45.6), as naive and Chronos fall
-below weight 0.02 in development and cannot recover; hence $\alpha=0.05$.
+include zero) at the slow tuned $\eta=0.5$. Setting $\alpha=0$ (no weight floor) improves main-window MAE (33.3 vs.\ 35.9) but worsens the shock
+(53.0 vs.\ 45.6) as naive and Chronos sink below weight 0.02; hence $\alpha=0.05$.
 
 \section{Limitations}
 \label{sec:limitations}
@@ -325,8 +322,8 @@ leakage; and its advantage over naive does not grow after release (MAE ratio 0.7
 origins, 1.01 on 19 later ones that no corpus could contain), though the periods differ in difficulty
 (E1: 0.88 and 0.57). Contamination is neither shown nor excluded.
 
-\textbf{Scope.} Results are specific to this series, period and model families; deep sequence
-models and covariates (FX, oil prices; their publication lags risk leakage) were not evaluated.
+\textbf{Scope.} Results are specific to this series, period and model families; deep models and
+covariates (FX, oil prices) were not evaluated.
 
 \section{Conclusion}
 
