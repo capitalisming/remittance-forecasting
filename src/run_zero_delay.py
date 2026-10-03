@@ -59,7 +59,7 @@ def load_archive():
     return pd.read_csv(ARCHIVE_CSV, index_col=0, parse_dates=True)
 
 
-def simulate(arch, w0, eta, alpha, clip_c, zero_delay):
+def simulate(arch, w0, eta, alpha, clip_c, zero_delay, clipped=True):
     """Weight recursion from START. w0: weights logged at START (after the operational events
     through month 2022-01 were applied); arch rows are indexed by issue date."""
     w = np.array([w0[f"w_{k}"] for k in NAMES])
@@ -76,7 +76,9 @@ def simulate(arch, w0, eta, alpha, clip_c, zero_delay):
             r = targets[m]
             if pd.isna(r.actual):
                 continue
-            loss = np.minimum(np.abs(np.array([getattr(r, k) for k in NAMES]) - r.actual) / clip_c, 1.0)
+            loss = np.abs(np.array([getattr(r, k) for k in NAMES]) - r.actual) / clip_c
+            if clipped:
+                loss = np.minimum(loss, 1.0)
             q = w * np.exp(-eta * loss)
             q /= q.sum()
             w = (1 - alpha) * q + alpha / len(NAMES)
@@ -133,10 +135,30 @@ def main():
         boot = bs.moving_block_bootstrap_mean(d, 3)
         res["ci_zero_vs_real_ordinary_block3"][str(eta)] = [round(float(d.mean()), 2),
                                                            *[round(float(x), 2) for x in np.percentile(boot, [2.5, 97.5])]]
+    # unclipped-loss variant: same scale |error|/c, no cap at 1 (reviewer check on clipping)
+    res["unclipped_mae"] = {}
+    res["unclipped_ci_zero_vs_real_ordinary_block3"] = {}
+    usims = {}
+    for zero in (False, True):
+        for eta in ETAS:
+            s_ = simulate(arch, w0, eta, alpha, clip_c, zero, clipped=False)
+            usims[(zero, eta)] = s_.loc[s_.actual.notna()]
+            res["unclipped_mae"][f"{'zero' if zero else 'real'}_eta{eta}"] = {
+                **{w: round(float(usims[(zero, eta)].abs_err[m.values].mean()), 2) for w, m in win.items()},
+                "weight_naive_mean_shock": round(float(usims[(zero, eta)].w_naive[win['shock'].values].mean()), 3)}
+    for eta in ETAS:
+        d = (usims[(True, eta)].abs_err - usims[(False, eta)].abs_err)[win["ordinary"].values].to_numpy()
+        boot = bs.moving_block_bootstrap_mean(d, 3)
+        res["unclipped_ci_zero_vs_real_ordinary_block3"][str(eta)] = [round(float(d.mean()), 2),
+            *[round(float(x), 2) for x in np.percentile(boot, [2.5, 97.5])]]
     json.dump(res, open(os.path.join(RESULTS, "zero_delay_counterfactual.json"), "w"), indent=2)
 
     print("n per window:", res["n"], "\n")
     print(pd.DataFrame(res["mae"]).T.to_string())
+    print("\nUNCLIPPED loss (|error|/c, no cap):")
+    print(pd.DataFrame(res["unclipped_mae"]).T.to_string())
+    for eta, v in res["unclipped_ci_zero_vs_real_ordinary_block3"].items():
+        print(f"  unclipped eta={eta}: zero-vs-real ordinary [point, lo, hi] = {v}")
     print("\nzero-delay minus real-lag MAE on the ordinary window: [point, 95% CI lo, hi] (block=3)")
     for eta, v in res["ci_zero_vs_real_ordinary_block3"].items():
         print(f"  eta={eta}: {v}")

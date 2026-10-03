@@ -33,10 +33,10 @@ redefinition acts as an unplanned stress test. We combine expanding- and rolling
 regression and a zero-shot foundation model (Chronos-Bolt) with the fixed-share rule, under a
 protocol reconstructed from 99 archived data versions. In ordinary months expanding ridge cuts MAE
 by 45\% relative to seasonal naive (28.6 vs.\ 51.7 million USD); in the eight shock months it is
-51\% worse (53.4 vs.\ 35.3). The combiner is no better than equal weights, and a zero-delay
-counterfactual shows delay is not why it misses the shock: with immediate feedback its
-April--September 2022 MAE is still 44.2--45.6 against 35.2 for naive at every learning rate, though
-immediate feedback lowers ordinary-month MAE by 2.1 to 8.8, most at fast learning. During the
+51\% worse (53.4 vs.\ 35.3). The combiner is no better than equal weights, and within fixed share neither
+delayed feedback, a slow learning rate nor loss clipping explains its shock miss: with immediate
+feedback its April--September 2022 MAE is still 43.5--45.6 against 35.2 for naive, though immediate
+feedback lowers ordinary-month MAE by 2.1 to 8.8, most at fast learning. During the
 redefinition fitted-model MAE reaches 87.6--115.6 against 49.3 for naive.
 
 \keywords{remittances \and forecasting \and delayed feedback \and online learning \and foundation models}
@@ -47,7 +47,7 @@ redefinition fitted-model MAE reaches 87.6--115.6 against 49.3 for naive.
 Remittances are a large share of household income in the Kyrgyz Republic: personal remittances
 received averaged close to 30\% of GDP over 2012--2021~\cite{wdi}. In spring 2022, after the
 invasion of Ukraine and sanctions on Russia -- source of most of these inflows -- the National Bank
-of the Kyrgyz Republic (NBKR) projected a 20\% decline and the World Bank a 32\%~\cite{eurasianet}.
+of the Kyrgyz Republic (NBKR) projected a 20\% decline~\cite{eurasianet} and the World Bank a 32\%~\cite{wb2022brief}.
 Neither materialised: inflows over February--September 2022 were 8\% above the same months of 2021,
 and GDP grew by about 7\% on preliminary data~\cite{interfax}. This episode motivates the question
 studied here; we do not attempt to explain the institutional forecasting error.
@@ -86,10 +86,9 @@ macroeconomic series and combination rules already used in practice. Macroeconom
 distinguishes evaluation on revised data from data available at the
 time~\cite{croushore2001realtime}; remittance studies typically use the latest revised series.
 
-\textbf{Model complexity and TSFMs.} For short monthly series we favour strong simple baselines
-over deep sequence models trained from scratch, consistent with evidence that linear baselines
-remain competitive~\cite{zeng2023transformers}. Pretrained TSFMs such as
-Chronos~\cite{ansari2024chronos} forecast zero-shot. The closest prior
+\textbf{Model complexity and TSFMs.} For short monthly series we favour strong simple baselines over deep models trained from
+scratch~\cite{zeng2023transformers}; pretrained TSFMs such as Chronos~\cite{ansari2024chronos}
+forecast zero-shot. The closest prior
 work~\cite{jetwiriyanon2025tsfmecon} finds TSFMs match classical models in stable conditions but
 degrade during shocks; we find a consistent pattern under a different, delayed-publication protocol that combines the
 TSFM with other experts online (pretraining exposure: Section~\ref{sec:limitations}).
@@ -111,7 +110,7 @@ earliest vintage reporting it under the same accounting definition as the vintag
 million (below the spreadsheets' rounding resolution), 9 of 97 consecutive vintage pairs revise any
 shared month, by less than 4\% in all but one case.
 
-Second, in a vintage dated 2024-02-14, NBKR redefined the series -- from transfers through
+Second, in a vintage dated 2024-02-14~\cite{nbkr2024table}, NBKR redefined the series -- from transfers through
 money-transfer systems to all cross-border instruments, including mobile banking and e-wallets --
 retroactively to 2022 onward, with revisions of up to 66\% for individual months. We treat this as
 a first-class fact: a forecaster in December 2023 could not have known the target's definition
@@ -123,8 +122,8 @@ exists for these months under either definition, and we do not attempt to constr
 the latest, most-revised value: scoring against the latest value would require predicting a
 methodological change made two years later. First-release and latest values coincide to within
 revision noise outside the 2023--24 window. \textbf{Leakage testing:} 1{,}553 automated checks
-confirm that no forecast origin observes any month past its publication cutoff and, for all 227
-issue dates before 2024-02-14, that no value is sourced from a post-redefinition vintage; all pass.
+confirm that no origin observes a month past its publication cutoff and, for all 227 issue dates
+before 2024-02-14, that no value comes from a post-redefinition vintage; all pass.
 
 \textbf{Code and data.} The code, the 99 archived vintages with provenance and the 1{,}553 leakage
 checks are in a private repository (\url{https://github.com/capitalisming/midi2026}), opened to
@@ -177,11 +176,10 @@ truth). Windows, by target month: \emph{main} excludes the four redefinition mon
 2024-01; $n=49$); \emph{shock} is 2022-02 to 2022-09 ($n=8$, inside main); \emph{ordinary} is main
 minus shock ($n=41$); \emph{transition} is the four excluded months ($n=4$, descriptive only). The
 primary metric is MAE in million USD~\cite{hyndman2006another}, with MAPE and MAE relative to seasonal
-naive as scale-free companions. Uncertainty on paired differences uses a moving-block bootstrap over
-origins (5{,}000 resamples), block lengths 3, 6 and 12 as a sensitivity. At $n=8$ a block of length
-$b$ has $9-b$ start positions: 6 and 3 for $b=3,6$, while a 12-month block is truncated to the whole
-sample (one position) and its interval collapses to the point estimate, so shock-window intervals
-are coarse. Two experiments probe the combiner: \textbf{Experiment D} adds $k \in \{1,2,3\}$ months
+naive as scale-free companions. Paired differences use a moving-block bootstrap over origins (5{,}000
+resamples), block lengths 3, 6 and 12. At $n=8$ a block of length $b$ has $9-b$ start positions (6
+and 3 for $b=3,6$); a 12-month block is truncated to the whole sample, so its interval collapses to
+the point estimate and shock-window intervals are coarse. Two experiments probe the combiner: \textbf{Experiment D} adds $k \in \{1,2,3\}$ months
 of artificial delay to feedback, and the \textbf{zero-delay counterfactual} (Experiment Z) makes
 month $m$'s outcome usable at the end of month $m$, crossed with $\eta \in \{0.5,1,2,4\}$; the
 experts' forecasts are unchanged. No conditional-predictive-ability test is reported (assumptions undemonstrated); non-significance is
@@ -238,17 +236,15 @@ artefact.
 
 \textbf{Comparison with published results.} Benchmarks usually report errors relative to seasonal
 naive~\cite{ansari2024chronos,hyndman2006another}: E1, E2 and E3 score 0.55, 0.63 and 0.71 (ordinary
-months) and 1.51, 1.49 and 1.21 (shock). Their ordinary-month MAPE is 13.2\%, 14.2\% and 17.1\%
-against 24.3\% for naive. A hybrid LSTM-attention model for monthly Nepalese remittances reports
-4.9\% MAPE~\cite{ghimire2026remittance}, but for another country, period and protocol, and our series
-is far more volatile (year-on-year standard deviation 31\%); such figures are indicative only.
+months) and 1.51, 1.49 and 1.21 (shock); their ordinary-month MAPE is 13.2\%, 14.2\% and 17.1\%
+against 24.3\% for naive, on a series with a year-on-year standard deviation of 31\%.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\linewidth]{figures/fig_combined.pdf}
-\caption{(a) Monthly remittance inflows, latest vs.\ first-release values; shaded: 2022 shock and
-2023--24 redefinition. (b) MAE by expert (E1--E3 as in Table~\ref{tab:expert-race}) and window.}
-\label{fig:combined}
+\includegraphics[width=\linewidth]{figures/fig_series.pdf}
+\caption{Monthly remittance inflows, latest vs.\ first-release values; shaded: 2022 shock and
+2023--24 redefinition.}
+\label{fig:series}
 \end{figure}
 
 \subsection{Is it the delay or the learning rate?}
@@ -259,13 +255,14 @@ window (35.9 vs.\ 34.6; 95\% CI of the difference $[-0.29,+2.34]$) and slightly 
 +20.4]$) but not reliably Chronos ($+2.9$; $[-7.4,+12.7]$). To separate delay from learning rate,
 Experiment Z restarts the weight recursion on 2022-03-31 from the logged operational weights (the
 first origin whose information set covers every pre-evaluation month; the real-lag, $\eta=0.5$ cell
-reproduces the published forecasts exactly), so its shock window is April--September 2022 ($n=6$).
+reproduces the published forecasts exactly), so its shock window is April--September 2022 ($n=6$). The $\eta=2$ and $\eta=4$ cells restart from the
+same weights, which were learned with $\eta=0.5$ and the real lag, not tuned from scratch.
 
 \begin{table}[t]
 \centering
 \caption{Fixed-share MAE (million USD) with feedback at the real publication lag vs.\ available
-immediately, by learning rate $\eta$; weights restarted on 2022-03-31 (Experiment Z), so Shock
-is April--September 2022.}
+immediately, by learning rate $\eta$, with the loss clipped at $c$ or unclipped; weights restarted on
+2022-03-31 (Experiment Z), so Shock is April--September 2022.}
 \label{tab:zero-delay}
 \small
 \begin{tabular}{ll@{\hspace{9pt}}c@{\hspace{9pt}}c@{\hspace{9pt}}c}
@@ -279,21 +276,25 @@ Real lag   & 2           & 37.5 & 45.0 & 98.6 \\
 Real lag   & 4           & 38.9 & 45.3 & 102.1 \\
 Immediate  & 0.5         & 31.9 & 45.6 & 92.2 \\
 Immediate  & 2           & 30.9 & 45.0 & 96.4 \\
-Immediate  & 4           & \textbf{30.1} & 44.2 & 90.3 \\
+Immediate  & 4           & 30.1 & 44.2 & 90.3 \\
+Real lag   & 4, unclipped      & 37.4 & 45.1 & 102.2 \\
+Immediate  & 4, unclipped      & \textbf{29.2} & 43.5 & 80.5 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:zero-delay} gives two results. First, the shock shortfall is not a delay or
-learning-rate effect: even with immediate feedback and $\eta=4$, MAE is 44.2 against 35.2 for
-naive, and all real-lag cells lie in 45.0--46.0. Naive's mean weight over the shock rises from 0.27
-($\eta=0.5$) to 0.57 ($\eta=4$) with immediate feedback, but naive was the worst expert in ordinary
-months (51.7), so a combiner learning from history cannot rationally commit to it. Second, delay
-matters in ordinary months and interacts with the learning rate: with the real lag a faster rate
-hurts (34.0 to 38.9 from $\eta=0.5$ to 4), with immediate feedback it helps (31.9 to 30.1);
-immediate feedback lowers ordinary-month MAE by 2.1 ($\eta=0.5$) to 8.8 ($\eta=4$), with block-3
-bootstrap intervals excluding zero. In the transition window 75\% of expert losses are clipped, so
-updates carry little information and no setting avoids the loss.
+Table~\ref{tab:zero-delay} gives two results. First, within fixed share the shock shortfall is not
+a delay or learning-rate effect: even with immediate feedback and $\eta=4$, MAE is 44.2 against 35.2
+for naive, and all real-lag cells lie in 45.0--46.0. Nor is it a clipping artefact. The cap at $c$
+does flatten the signal (in the shock E1's errors of 108 and 128 both give loss 1, naive's 61 gives
+0.82), but with the loss left unclipped, immediate feedback and $\eta=4$ still give 43.5, although
+naive's mean weight rises to 0.69. Naive was the worst expert in ordinary months (51.7), so a combiner
+learning from history cannot rationally commit to it. Second, delay matters in ordinary months and
+interacts with the learning rate: with the real lag a faster rate hurts (34.0 to 38.9 from $\eta=0.5$
+to 4), with immediate feedback it helps (31.9 to 30.1). Immediate feedback lowers ordinary-month MAE
+by 2.1 (95\% CI $-3.7$ to $-1.1$) at $\eta=0.5$ and by 8.8 ($-16.7$ to $-3.7$) at $\eta=4$ (block 3;
+$-4.2$ and $-6.6$ at $\eta=1,2$, intervals also excluding zero). In the transition window 75\% of expert
+losses are clipped, so updates carry little information and no setting avoids the loss.
 
 Experiment D agrees: extra delay $k \in \{1,2,3\}$ changes main-window MAE by at most 0.21 (all CIs
 include zero) at the slow tuned $\eta=0.5$. Setting $\alpha=0$ (no weight floor) improves main-window
@@ -311,17 +312,18 @@ logged operational weights because Chronos forecasts for the development period 
 \textbf{Multiple comparisons.} Section~\ref{sec:results} reports eleven pairwise 95\% bootstrap
 intervals without multiplicity correction (naive Bonferroni: family-wise error up to
 $1-0.95^{11}\approx43\%$); we do not correct, as the comparisons share data and overlapping windows
-and are not independent. The one interval excluding zero outside the fixed-share-vs.-equal-weight
-comparison (fixed-share vs.\ naive, shock) matches the pattern described there -- evidence against
-a multiplicity artifact, not proof.
+and are not independent. Besides the fixed-share-vs.-equal-weight shock interval, five exclude zero:
+fixed-share vs.\ naive in the shock, and the four immediate-vs.-real feedback gains in ordinary months
+(which share data across $\eta$ and are not independent of each other). This is evidence against a
+multiplicity artifact, not proof.
 
 \textbf{TSFM pretraining exposure.} Chronos-Bolt was pretrained on a large corpus of public and
 synthetic series and released on 2024-11-26~\cite{chronosbolt}; we cannot inspect the corpus and so
 cannot exclude series correlated with 2022 conditions, or NBKR's own. Two partial checks: its mean
-shock-window error is negative like the institutional forecasters' ($-20$), arguing against
-gross leakage; and its advantage over naive does not grow after release (MAE ratio 0.78 on the 34
-earlier origins, 1.01 on the 19 later ones, which no corpus could contain), though the periods
-differ in difficulty (E1: 0.88 and 0.57). Contamination is neither shown nor excluded.
+shock-window error is negative like the institutional forecasters' ($-20$), arguing against gross
+leakage; and its advantage over naive does not grow after release (MAE ratio 0.78 on 34 earlier
+origins, 1.01 on 19 later ones that no corpus could contain), though the periods differ in difficulty
+(E1: 0.88 and 0.57). Contamination is neither shown nor excluded.
 
 \textbf{Scope.} Results are specific to this series, period and model families; deep sequence
 models and covariates (FX, oil prices; their publication lags risk leakage) were not evaluated.
@@ -331,8 +333,8 @@ models and covariates (FX, oil prices; their publication lags risk leakage) were
 Under a chronologically correct protocol, validated by 1{,}553 automated leakage checks, models fit
 on recent history beat seasonal naive in ordinary months (expanding ridge 28.6 vs.\ 51.7) but not
 during the 2022 inflow surge (53.4 vs.\ 35.3). Online combination did not close that gap, and a
-zero-delay counterfactual shows this was neither delayed feedback nor a slow learning rate; delay did
-cost accuracy in ordinary months, most at fast learning rates. Equal weights matched the tuned
+zero-delay counterfactual shows that, within fixed share, this was neither delayed feedback, a slow
+learning rate nor loss clipping; delay did cost accuracy in ordinary months, most at fast learning rates. Equal weights matched the tuned
 combiner. A retroactive redefinition of the target hurt every fitted model at least as much as the
 shock -- and was, in part, not a forecasting problem at all.
 

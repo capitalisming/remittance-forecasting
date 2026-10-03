@@ -1,4 +1,4 @@
-"""Generate the paper figure (paper/figures/fig_combined.pdf)
+"""Generate the paper figure (paper/figures/fig_series.pdf)
 from already-computed data/results -- no new analysis, just visualizing existing numbers
 (release_table.csv, expert_comparison_eval.csv) so Table 1 and the data description have a
 visual counterpart.
@@ -38,7 +38,7 @@ plt.rcParams.update({
 })
 
 
-def fig_combined():
+def fig_series():
     import matplotlib.dates as mdates
     rt = pd.read_csv("../data/processed/release_table.csv")
     rt["ref_month"] = pd.PeriodIndex(rt["ref_month"], freq="M")
@@ -46,8 +46,7 @@ def fig_combined():
     rt = rt[rt["ref_month"] >= pd.Period("2018-01", "M")]
     t = rt["ref_month"].dt.to_timestamp()
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(5.1, 1.6), gridspec_kw={"width_ratios": [1.35, 1]})
-
+    fig, ax1 = plt.subplots(figsize=(5.1, 1.2))
     ss = pd.Period("2022-02", "M").to_timestamp(); se = (pd.Period("2022-09", "M") + 1).to_timestamp()
     ts = panel.TRANSITION_ZONE[0].to_timestamp(); te = (panel.TRANSITION_ZONE[-1] + 1).to_timestamp()
     ax1.axvspan(ss, se, color=SHOCK_COLOR, alpha=0.18, lw=0, zorder=0)
@@ -61,40 +60,16 @@ def fig_combined():
     ax1.text(ss + (se - ss) / 2, 12, "shock", ha="center", va="bottom", fontsize=6.5, color=SHOCK_COLOR)
     ax1.text(te + pd.Timedelta(days=60), 12, "redefinition", ha="left", va="bottom", fontsize=6.5, color="#5d4fb0")
     ax1.set_ylabel("Million USD")
-    ax1.xaxis.set_major_locator(mdates.YearLocator(2))
+    ax1.xaxis.set_major_locator(mdates.YearLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
-    ax1.set_title("(a) Remittance inflows", fontsize=8, loc="left", pad=3)
-
-    df = pd.read_csv("../results/expert_comparison_eval.csv", index_col=0, parse_dates=True)
-    df["target_month"] = pd.PeriodIndex(df.index, freq="M") + 1
-    df = df.dropna(subset=["naive"])
-    tz = panel.TRANSITION_ZONE
-    shock = df.target_month.astype(str).between("2022-02", "2022-09")
-    wins = [("Ordinary", ~df.target_month.isin(tz) & ~shock), ("Shock", shock),
-            ("Transition", df.target_month.isin(tz))]
-    cols = ["naive", "expanding_ridge", "rolling_ridge_w48", "chronos_zeroshot"]
-    labs = ["Naive", "E1", "E2", "E3"]
-    colors = [COLOR_3, COLOR_1, COLOR_4, COLOR_2]
-    hatches = [None, "//", None, ".."]
-    w = 0.2
-    for i, (c, l, col, h) in enumerate(zip(cols, labs, colors, hatches)):
-        vals = [df.loc[m, c].mean() for _, m in wins]
-        ax2.bar([x + (i - 1.5) * w for x in range(3)], vals, width=w * 0.92, color=col, label=l,
-                hatch=h, edgecolor="white", linewidth=0.4)
-    ax2.set_xticks(range(3)); ax2.set_xticklabels([n for n, _ in wins], fontsize=7)
-    ax2.set_ylabel("MAE (million USD)")
-    ax2.set_ylim(0, 150)
-    ax2.legend(loc="upper left", frameon=False, ncol=4, fontsize=6.5, handlelength=1.0,
-               columnspacing=0.7, handletextpad=0.4, bbox_to_anchor=(-0.02, 1.02))
-    ax2.set_title("(b) MAE by window", fontsize=8, loc="left", pad=3)
-    fig.tight_layout(w_pad=0.8)
-    fig.savefig(f"{FIG_DIR}/fig_combined.pdf", bbox_inches="tight")
+    fig.tight_layout()
+    fig.savefig(f"{FIG_DIR}/fig_series.pdf", bbox_inches="tight")
     plt.close(fig)
 
 
 if __name__ == "__main__":
     import os
     os.makedirs(FIG_DIR, exist_ok=True)
-    fig_combined()
+    fig_series()
     print("written", FIG_DIR)
 

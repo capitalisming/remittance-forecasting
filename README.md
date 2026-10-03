@@ -20,12 +20,12 @@ World Bank, and a live retroactive redefinition of the series in 2024.
   - `run_experiment_a.py`, `run_experiment_d.py` — main experiments
   - `build_expert_comparison.py`, `build_table1.py` — regenerate the expert-race table (rerun after any expert hyperparameter change)
   - `bootstrap.py`, `run_bootstrap.py`, `run_bootstrap_shock_vs_all.py` — moving-block bootstrap CIs
-  - `run_zero_delay.py` — zero-delay counterfactual (feedback immediate x learning rate), Table 2 of the paper;
+  - `run_zero_delay.py` — zero-delay counterfactual (feedback immediate x learning rate, clipped and unclipped loss), Table 2 of the paper;
     writes `results/zero_delay_counterfactual.json` and `results/forecast_archive_eval.csv` (Chronos
     forecasts recovered exactly from the logged fixed-share weights; see the script docstring)
   - `shock_diagnostics.py` — every extra number quoted in the paper (ordinary window, MAPE, relative MAE,
     signed errors, y/y growth, clip rates, Chronos before/after release)
-  - `make_figures.py` — `paper/figures/fig_combined.pdf`
+  - `make_figures.py` — `paper/figures/fig_series.pdf`
   - `check_revisions.py` — within-regime revision counts at various materiality thresholds (Section 3 of the paper)
 - `tests/` — leakage and correctness tests (`pytest -q`; 1,610 pass: the 1,553 leakage checks cited in the paper plus 57 covariate-leakage tests)
 - `data/raw/` — archived NBKR vintages (99 files) and raw covariate downloads

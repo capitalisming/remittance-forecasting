@@ -88,5 +88,77 @@
       -16.7,
       -3.69
     ]
+  },
+  "unclipped_mae": {
+    "real_eta0.5": {
+      "shock": 45.64,
+      "ordinary": 34.12,
+      "transition": 96.29,
+      "weight_naive_mean_shock": 0.271
+    },
+    "real_eta1.0": {
+      "shock": 44.95,
+      "ordinary": 35.92,
+      "transition": 99.29,
+      "weight_naive_mean_shock": 0.329
+    },
+    "real_eta2.0": {
+      "shock": 44.49,
+      "ordinary": 37.06,
+      "transition": 100.46,
+      "weight_naive_mean_shock": 0.428
+    },
+    "real_eta4.0": {
+      "shock": 45.12,
+      "ordinary": 37.41,
+      "transition": 102.23,
+      "weight_naive_mean_shock": 0.53
+    },
+    "zero_eta0.5": {
+      "shock": 45.61,
+      "ordinary": 31.22,
+      "transition": 96.03,
+      "weight_naive_mean_shock": 0.311
+    },
+    "zero_eta1.0": {
+      "shock": 45.15,
+      "ordinary": 30.84,
+      "transition": 96.59,
+      "weight_naive_mean_shock": 0.41
+    },
+    "zero_eta2.0": {
+      "shock": 44.96,
+      "ordinary": 30.05,
+      "transition": 92.3,
+      "weight_naive_mean_shock": 0.574
+    },
+    "zero_eta4.0": {
+      "shock": 43.52,
+      "ordinary": 29.17,
+      "transition": 80.48,
+      "weight_naive_mean_shock": 0.693
+    }
+  },
+  "unclipped_ci_zero_vs_real_ordinary_block3": {
+    "0.5": [
+      -2.9,
+      -5.59,
+      -1.19
+    ],
+    "1.0": [
+      -5.08,
+      -9.83,
+      -2.1
+    ],
+    "2.0": [
+      -7.02,
+      -13.7,
+      -3.17
+    ],
+    "4.0": [
+      -8.24,
+      -16.33,
+      -3.18
+    ]
   }
 }
