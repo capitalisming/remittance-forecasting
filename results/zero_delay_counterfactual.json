@@ -1,0 +1,92 @@
+{
+  "start": "2022-03-31",
+  "alpha": 0.05,
+  "clip_c": 74.65767773149837,
+  "n": {
+    "shock": 6,
+    "ordinary": 41,
+    "transition": 4
+  },
+  "mae": {
+    "equal_weight": {
+      "shock": 44.51,
+      "ordinary": 32.76,
+      "transition": 85.72
+    },
+    "naive": {
+      "shock": 35.22,
+      "ordinary": 51.68,
+      "transition": 49.28
+    },
+    "real_eta0.5": {
+      "shock": 45.98,
+      "ordinary": 34.04,
+      "transition": 91.5,
+      "weight_naive_mean_shock": 0.249
+    },
+    "real_eta1.0": {
+      "shock": 45.6,
+      "ordinary": 35.64,
+      "transition": 94.61,
+      "weight_naive_mean_shock": 0.285
+    },
+    "real_eta2.0": {
+      "shock": 45.01,
+      "ordinary": 37.51,
+      "transition": 98.58,
+      "weight_naive_mean_shock": 0.359
+    },
+    "real_eta4.0": {
+      "shock": 45.3,
+      "ordinary": 38.9,
+      "transition": 102.13,
+      "weight_naive_mean_shock": 0.48
+    },
+    "zero_eta0.5": {
+      "shock": 45.55,
+      "ordinary": 31.91,
+      "transition": 92.21,
+      "weight_naive_mean_shock": 0.266
+    },
+    "zero_eta1.0": {
+      "shock": 44.96,
+      "ordinary": 31.47,
+      "transition": 95.15,
+      "weight_naive_mean_shock": 0.317
+    },
+    "zero_eta2.0": {
+      "shock": 44.98,
+      "ordinary": 30.91,
+      "transition": 96.4,
+      "weight_naive_mean_shock": 0.419
+    },
+    "zero_eta4.0": {
+      "shock": 44.22,
+      "ordinary": 30.07,
+      "transition": 90.33,
+      "weight_naive_mean_shock": 0.571
+    }
+  },
+  "ci_zero_vs_real_ordinary_block3": {
+    "0.5": [
+      -2.14,
+      -3.71,
+      -1.13
+    ],
+    "1.0": [
+      -4.17,
+      -7.39,
+      -2.14
+    ],
+    "2.0": [
+      -6.6,
+      -12.47,
+      -2.94
+    ],
+    "4.0": [
+      -8.83,
+      -16.7,
+      -3.69
+    ]
+  }
+}
